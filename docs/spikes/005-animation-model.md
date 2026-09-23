@@ -1,12 +1,12 @@
 # Spike 005: Animation model
 
-| | |
-|---|---|
-| Status | Complete |
-| Date | 2026-09-23 |
+|          |                                                                                                           |
+| -------- | --------------------------------------------------------------------------------------------------------- |
+| Status   | Complete                                                                                                  |
+| Date     | 2026-09-23                                                                                                |
 | Question | How does "declare states, not transitions" produce good motion automatically, as a pure function of time? |
-| Informs | ADR 0006 (component contract), ADR 0007 (scene segment cache) |
-| Machine | M5 Pro, Node 24.21 |
+| Informs  | ADR 0006 (component contract), ADR 0007 (scene segment cache)                                             |
+| Machine  | M5 Pro, Node 24.21                                                                                        |
 
 ## 1. Question and why it matters
 
@@ -41,16 +41,16 @@ trash").
 All eight systems do the same two things. They **match** elements between the old and new state, then
 **interpolate** each matched pair while fading unmatched ones in or out. They differ only in how they match:
 
-| System | Match key | Unmatched elements |
-|---|---|---|
-| FLIP (Lewis, 2015) | The same DOM node before and after a layout change | Not handled |
-| Framer Motion `layout` / `layoutId` | Same component, or same `layoutId` across different trees | `AnimatePresence` keeps removed nodes alive until their exit finishes |
-| CSS View Transitions | Same `view-transition-name` | Old snapshot fades out, new fades in |
-| Keynote Magic Move | Same object across slides; text by object, word or character | Fade |
-| Manim `Transform` | Explicit pair given by the author | Not applicable |
-| Manim `TransformMatchingTex` | Equal TeX substrings | `FadeTransformPieces`: fade out and in |
-| Motion Canvas | None: imperative tweens on signals | Not applicable |
-| Lucent v0.1 draft | Element id; text by shared words; equations by Typst spans | Fade or grow |
+| System                              | Match key                                                    | Unmatched elements                                                    |
+| ----------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------- |
+| FLIP (Lewis, 2015)                  | The same DOM node before and after a layout change           | Not handled                                                           |
+| Framer Motion `layout` / `layoutId` | Same component, or same `layoutId` across different trees    | `AnimatePresence` keeps removed nodes alive until their exit finishes |
+| CSS View Transitions                | Same `view-transition-name`                                  | Old snapshot fades out, new fades in                                  |
+| Keynote Magic Move                  | Same object across slides; text by object, word or character | Fade                                                                  |
+| Manim `Transform`                   | Explicit pair given by the author                            | Not applicable                                                        |
+| Manim `TransformMatchingTex`        | Equal TeX substrings                                         | `FadeTransformPieces`: fade out and in                                |
+| Motion Canvas                       | None: imperative tweens on signals                           | Not applicable                                                        |
+| Lucent v0.1 draft                   | Element id; text by shared words; equations by Typst spans   | Fade or grow                                                          |
 
 Lucent already has the right match key: element ids (`$legend`) and asset points (`$blood/wbc`). **Matching by id is
 free and exact**; content matching (text, paths, tiles) is only needed inside one element's state change.
@@ -108,12 +108,12 @@ prototype's approved moves; values should be tuned against real frames, not trus
 
 ### F6. Path morphing: correspondence is the expensive part, and it can be precomputed
 
-| Library | Licence | Last release | Behaviour |
-|---|---|---|---|
-| flubber 0.4.2 | MIT | 2022-06 | Resamples both shapes and finds the best rotation of point correspondence; handles different point counts; multi-shape split and combine |
-| d3-interpolate-path 2.3.0 | BSD-3 | 2022-08 | Extends the shorter segment list; no correspondence search |
-| @remotion/paths 4.0.527 | MIT | 2026-09 | Accepted a 4-point and a 3-point path without error and gave a plausible midpoint; no correspondence search |
-| polymorph-js 1.0.2 | MIT | 2022-05 | Similar resampling approach |
+| Library                   | Licence | Last release | Behaviour                                                                                                                                |
+| ------------------------- | ------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| flubber 0.4.2             | MIT     | 2022-06      | Resamples both shapes and finds the best rotation of point correspondence; handles different point counts; multi-shape split and combine |
+| d3-interpolate-path 2.3.0 | BSD-3   | 2022-08      | Extends the shorter segment list; no correspondence search                                                                               |
+| @remotion/paths 4.0.527   | MIT     | 2026-09      | Accepted a 4-point and a 3-point path without error and gave a plausible midpoint; no correspondence search                              |
+| polymorph-js 1.0.2        | MIT     | 2022-05      | Similar resampling approach                                                                                                              |
 
 Measured (Appendix A): flubber spends 1.2 to 4.8 ms **once** computing the correspondence, then 18 to 126 microseconds
 per frame. The per-frame cost is three orders of magnitude below the render budget (about 125 ms of CPU per frame
@@ -192,14 +192,14 @@ showing animation beating static graphics compared unequal content; their two pr
 motion should match the concept's structure) and **apprehension** (it must be slow and clear enough to perceive).
 Mayer's multimedia principles (Mayer, 2020) give rules an engine can check:
 
-| Principle | Meaning | Enforceable rule |
-|---|---|---|
-| Temporal contiguity | Show a thing while it is being said | Cues bind steps to words (ADR 0005); warn when an unanchored step fires more than 2 s from any narration |
-| Signaling | Cue what matters | `ring`, `highlight`, `focus` exist; warn when a scene has narration and no emphasis |
-| Segmenting | Learner-paced chunks | Warn when a scene runs over 45 s without a new visual state |
-| Redundancy | Do not show the narration as on-screen text | Warn when on-screen text shares 8 or more consecutive words with the narration |
-| Coherence | No decorative motion | Continuous motion only on components that declare it (helix, drift) |
-| Spatial contiguity | Labels next to what they label | Label placement is the engine's (ADR 0009) |
+| Principle           | Meaning                                     | Enforceable rule                                                                                         |
+| ------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Temporal contiguity | Show a thing while it is being said         | Cues bind steps to words (ADR 0005); warn when an unanchored step fires more than 2 s from any narration |
+| Signaling           | Cue what matters                            | `ring`, `highlight`, `focus` exist; warn when a scene has narration and no emphasis                      |
+| Segmenting          | Learner-paced chunks                        | Warn when a scene runs over 45 s without a new visual state                                              |
+| Redundancy          | Do not show the narration as on-screen text | Warn when on-screen text shares 8 or more consecutive words with the narration                           |
+| Coherence           | No decorative motion                        | Continuous motion only on components that declare it (helix, drift)                                      |
+| Spatial contiguity  | Labels next to what they label              | Label placement is the engine's (ADR 0009)                                                               |
 
 Cognitive load theory (Sweller, 1988) supports the Lucent v0.1 draft's concurrency cap: the eye can track only a few
 independent motions at once. Three independent motion groups at a time, 80 ms stagger within a group and 0.8 s of
@@ -210,12 +210,12 @@ a time, things transform instead of cutting, and the viewer's eye is anchored to
 
 ## 4. Options compared
 
-| Option | Example | Tokens per scene | Determinism and parallel frames | Agent error rate | Expressiveness |
-|---|---|---|---|---|---|
-| A. Imperative timeline | Manim `play` / `wait`, Motion Canvas generators | High: every motion written | Only if no accumulated state | High: timing and ordering bugs | Unlimited |
-| B. Author-written keyframes | After Effects, Remotion `interpolate` | Highest | Good | High: numbers everywhere | Unlimited |
-| **C. Declared states, engine-derived motion, compiled to tracks** | Keynote Magic Move, Framer `layout`, View Transitions | Lowest | Good, if tracks are closed-form | Low: states only | Bounded by the match and interpolation rules; escape hatch via components |
-| D. Stateful physics at runtime | react-spring's runtime integration | Low | Poor: needs frame history | Low | Medium |
+| Option                                                            | Example                                               | Tokens per scene           | Determinism and parallel frames | Agent error rate               | Expressiveness                                                            |
+| ----------------------------------------------------------------- | ----------------------------------------------------- | -------------------------- | ------------------------------- | ------------------------------ | ------------------------------------------------------------------------- |
+| A. Imperative timeline                                            | Manim `play` / `wait`, Motion Canvas generators       | High: every motion written | Only if no accumulated state    | High: timing and ordering bugs | Unlimited                                                                 |
+| B. Author-written keyframes                                       | After Effects, Remotion `interpolate`                 | Highest                    | Good                            | High: numbers everywhere       | Unlimited                                                                 |
+| **C. Declared states, engine-derived motion, compiled to tracks** | Keynote Magic Move, Framer `layout`, View Transitions | Lowest                     | Good, if tracks are closed-form | Low: states only               | Bounded by the match and interpolation rules; escape hatch via components |
+| D. Stateful physics at runtime                                    | react-spring's runtime integration                    | Low                        | Poor: needs frame history       | Low                            | Medium                                                                    |
 
 Option C authored, compiled into option B internally. Authors and agents write states; the compiler writes
 keyframe tracks; the renderer evaluates tracks at any `t`.
@@ -281,50 +281,50 @@ interpolate from the previous keyframe's props to `k.props`.
 Components should not write tweening code. Each prop in a component's zod schema declares how it interpolates, as
 metadata:
 
-| `interp` | Behaviour |
-|---|---|
-| `lerp` | Numbers, positions, sizes |
-| `color` | Interpolated in OKLab (perceptually uniform; no muddy midpoints) |
-| `box` | Box interpolation (F2) |
-| `path` | Uses the precomputed `path` match plan, else cross-fade |
-| `text` | Uses the `text` match plan |
-| `discrete` | Switches at `u = 0.5` with a short cross-fade |
+| `interp`   | Behaviour                                                        |
+| ---------- | ---------------------------------------------------------------- |
+| `lerp`     | Numbers, positions, sizes                                        |
+| `color`    | Interpolated in OKLab (perceptually uniform; no muddy midpoints) |
+| `box`      | Box interpolation (F2)                                           |
+| `path`     | Uses the precomputed `path` match plan, else cross-fade          |
+| `text`     | Uses the `text` match plan                                       |
+| `discrete` | Switches at `u = 0.5` with a short cross-fade                    |
 
 The engine hands the component interpolated props plus `u`, `match` and `age` (`t - born`). A component only draws.
 This keeps components tiny, which matters because agents will write them.
 
 ### 5.4 Default motion rules
 
-| Event | Default motion | Duration | Easing |
-|---|---|---|---|
-| Enter, generic | Fade in and rise 12 px (at 1080p) | 0.5 s | out (cubic) |
-| Enter, marks (`ring`, `underline`, `arrow`, `measure`) | Draw-on along the stroke | 0.6 to 0.9 s, by path length | inOut |
-| Enter, photo | Fade in from scale 0.94 | 1.0 s | out |
-| Exit | Reverse of the entrance | 0.6 x entrance | in (cubic) |
-| Prop change (number, opacity, colour) | Interpolate by `interp` | 0.5 s | inOut |
-| Move or resize (re-layout) | Box interpolation | By distance (F5) | Spring, `w = 6.64 / d` |
-| Text change | Word diff: keep travels, delete fades, insert fades in with stagger | By longest travel | Spring |
-| Tiles to sequence | Copy matching, left to right | 1.2 to 1.6 s total | inOut |
-| Path change | Morph if compatible (F6), else cross-fade plus box tween | By distance | inOut |
-| Same id, different component across scenes | Box tween plus cross-fade | By distance | inOut |
-| Zoom-through | Log-scale camera zoom about the focus; handoff at 3x with a 0.4 s cross-fade; incoming starts at the target region's box | 1.6 s | inOut |
-| Continuous motion | Function of `t - born`, 0.5 s speed ramp in and out | Until exit | Ramp |
-| Stagger | 80 ms between siblings, total stagger capped at 0.6 s | | |
-| Concurrency | At most 3 independent motion groups at once; extra groups queue | | |
-| Dwell | At least 0.8 s of stillness after a reveal before an unanchored step | | |
+| Event                                                  | Default motion                                                                                                           | Duration                     | Easing                 |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------- | ---------------------- |
+| Enter, generic                                         | Fade in and rise 12 px (at 1080p)                                                                                        | 0.5 s                        | out (cubic)            |
+| Enter, marks (`ring`, `underline`, `arrow`, `measure`) | Draw-on along the stroke                                                                                                 | 0.6 to 0.9 s, by path length | inOut                  |
+| Enter, photo                                           | Fade in from scale 0.94                                                                                                  | 1.0 s                        | out                    |
+| Exit                                                   | Reverse of the entrance                                                                                                  | 0.6 x entrance               | in (cubic)             |
+| Prop change (number, opacity, colour)                  | Interpolate by `interp`                                                                                                  | 0.5 s                        | inOut                  |
+| Move or resize (re-layout)                             | Box interpolation                                                                                                        | By distance (F5)             | Spring, `w = 6.64 / d` |
+| Text change                                            | Word diff: keep travels, delete fades, insert fades in with stagger                                                      | By longest travel            | Spring                 |
+| Tiles to sequence                                      | Copy matching, left to right                                                                                             | 1.2 to 1.6 s total           | inOut                  |
+| Path change                                            | Morph if compatible (F6), else cross-fade plus box tween                                                                 | By distance                  | inOut                  |
+| Same id, different component across scenes             | Box tween plus cross-fade                                                                                                | By distance                  | inOut                  |
+| Zoom-through                                           | Log-scale camera zoom about the focus; handoff at 3x with a 0.4 s cross-fade; incoming starts at the target region's box | 1.6 s                        | inOut                  |
+| Continuous motion                                      | Function of `t - born`, 0.5 s speed ramp in and out                                                                      | Until exit                   | Ramp                   |
+| Stagger                                                | 80 ms between siblings, total stagger capped at 0.6 s                                                                    |                              |                        |
+| Concurrency                                            | At most 3 independent motion groups at once; extra groups queue                                                          |                              |                        |
+| Dwell                                                  | At least 0.8 s of stillness after a reveal before an unanchored step                                                     |                              |                        |
 
 All values are theme tokens (`motion.base`, `motion.stagger`, ...), not constants in components.
 
 ### 5.5 Validator rules proposed (W41x, pacing and pedagogy)
 
-| Code | Rule |
-|---|---|
-| W410 | More than 3 independent motion groups at once |
-| W411 | Unanchored step less than the dwell after a reveal |
-| W412 | Step more than 2 s from any narration (temporal contiguity) |
-| W413 | Scene over 45 s without a new visual state (segmenting) |
+| Code | Rule                                                                      |
+| ---- | ------------------------------------------------------------------------- |
+| W410 | More than 3 independent motion groups at once                             |
+| W411 | Unanchored step less than the dwell after a reveal                        |
+| W412 | Step more than 2 s from any narration (temporal contiguity)               |
+| W413 | Scene over 45 s without a new visual state (segmenting)                   |
 | W414 | On-screen text repeats 8 or more consecutive narration words (redundancy) |
-| W415 | Scene with narration and no emphasis step (signaling) |
+| W415 | Scene with narration and no emphasis step (signaling)                     |
 
 Codes W41x avoid the W402 already used in spike 001 for sentence length.
 
@@ -371,25 +371,25 @@ Codes W41x avoid the W402 already used in spike 001 for sentence length.
   https://bottosson.github.io/posts/oklab/
 - Jarke J. van Wijk and Wim A. A. Nuij, "Smooth and efficient zooming and panning", IEEE InfoVis 2003.
 - Eugene W. Myers, "An O(ND) difference algorithm and its variations", Algorithmica 1(2), 1986.
-- Richard E. Mayer, *Multimedia Learning*, 3rd edition, Cambridge University Press, 2020.
+- Richard E. Mayer, _Multimedia Learning_, 3rd edition, Cambridge University Press, 2020.
 - John Sweller, "Cognitive load during problem solving: effects on learning", Cognitive Science 12(2), 1988.
 - Barbara Tversky, Julie B. Morrison and Mireille Betrancourt, "Animation: can it facilitate?", International
   Journal of Human-Computer Studies 57(4), 2002.
 - Bay-Wei Chang and David Ungar, "Animation: from cartoons to the user interface", UIST 1993.
-- Frank Thomas and Ollie Johnston, *The Illusion of Life: Disney Animation*, 1981 (slow in and slow out, arcs).
+- Frank Thomas and Ollie Johnston, _The Illusion of Life: Disney Animation_, 1981 (slow in and slow out, arcs).
 
 ## Appendix A. Micro-benchmark
 
 Throwaway script in the session scratchpad (`research/005/bench.mjs`), not part of Lucent. 900 frames (30 s at
 30 fps) per case, Node 24.21 on the M5 Pro, two runs, second run shown.
 
-| Case | Setup (once) | Per frame |
-|---|---|---|
-| flubber, circle (64 points) to star (10 points), `maxSegmentLength` 10 | 1.23 ms | 17.2 µs |
-| flubber, same shapes, `maxSegmentLength` 2 | 4.81 ms | 126.4 µs |
-| d3-interpolate-path, circle to rectangle | 0.54 ms | 18.4 µs |
-| @remotion/paths, compatible rectangles | 0.02 ms | 4.9 µs |
-| Closed-form critically damped spring, 60 elements | 0.01 ms | 0.2 µs |
+| Case                                                                   | Setup (once) | Per frame |
+| ---------------------------------------------------------------------- | ------------ | --------- |
+| flubber, circle (64 points) to star (10 points), `maxSegmentLength` 10 | 1.23 ms      | 17.2 µs   |
+| flubber, same shapes, `maxSegmentLength` 2                             | 4.81 ms      | 126.4 µs  |
+| d3-interpolate-path, circle to rectangle                               | 0.54 ms      | 18.4 µs   |
+| @remotion/paths, compatible rectangles                                 | 0.02 ms      | 4.9 µs    |
+| Closed-form critically damped spring, 60 elements                      | 0.01 ms      | 0.2 µs    |
 
 Reading: motion evaluation is negligible next to rasterisation. The only cost worth managing is morph setup, which
 belongs in the compiler for determinism more than for speed.

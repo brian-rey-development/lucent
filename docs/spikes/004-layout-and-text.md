@@ -1,12 +1,12 @@
 # Spike 004: Layout, text measurement and label placement
 
-| | |
-|---|---|
-| Status | Complete |
-| Date | 2026-09-23 |
+|          |                                                                                                                                                                                                                        |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status   | Complete                                                                                                                                                                                                               |
+| Date     | 2026-09-23                                                                                                                                                                                                             |
 | Question | How does the engine compute every element's box at compile time, fast enough for `check` (< 200 ms) and exactly enough to match the rasteriser, and how do labels on image points place themselves without collisions? |
-| Informs | ADR 0009 (engine-owned layout), ADR 0006 (component contract) |
-| Machine | M5 Pro, 15 cores, 24 GB, Node 24.21 |
+| Informs  | ADR 0009 (engine-owned layout), ADR 0006 (component contract)                                                                                                                                                          |
+| Machine  | M5 Pro, 15 cores, 24 GB, Node 24.21                                                                                                                                                                                    |
 
 ## 1. Question and why it matters
 
@@ -48,12 +48,12 @@ For the three bundled OFL faces, fontkit, harfbuzzjs and Skia `measureText` retu
 and the pixel-scanned ink width was within **1.5 px** of both (the difference is antialiasing coverage, not
 measurement error).
 
-| Face | String | Advance (all libs) | fontkit ink | resvg bbox | resvg pixels |
-|---|---|---|---|---|---|
-| Inter Regular 32 px | no nucleus | 165.4 | 161.4 | 161.4 | 162 |
-| Inter Regular 32 px | white blood cell · nucleus kept | 457.5 | 455.8 | 455.8 | 456 |
-| Inter Bold 32 px | Human blood smear · Wright's stain | 557.8 | 553.7 | 553.7 | 554 |
-| JetBrains Mono 32 px | ATGGTGCATCTGACTCCTGAGGAG | 460.8 | 456.6 | 456.6 | 458 |
+| Face                 | String                             | Advance (all libs) | fontkit ink | resvg bbox | resvg pixels |
+| -------------------- | ---------------------------------- | ------------------ | ----------- | ---------- | ------------ |
+| Inter Regular 32 px  | no nucleus                         | 165.4              | 161.4       | 161.4      | 162          |
+| Inter Regular 32 px  | white blood cell · nucleus kept    | 457.5              | 455.8       | 455.8      | 456          |
+| Inter Bold 32 px     | Human blood smear · Wright's stain | 557.8              | 553.7       | 553.7      | 554          |
+| JetBrains Mono 32 px | ATGGTGCATCTGACTCCTGAGGAG           | 460.8              | 456.6       | 456.6      | 458          |
 
 Full table in the appendix. This is expected from first principles: resvg shapes with rustybuzz (a Rust port of
 HarfBuzz) and reads the same outlines, so a HarfBuzz-based measurer predicts it exactly. Advance width minus ink
@@ -86,11 +86,11 @@ here handles static TTFs identically, while variable-axis support differs betwee
 
 ### 3.5 Measurement is fast enough; HarfBuzz is the fastest cold option (measured)
 
-| Library | Import | Per unique string | 6,000 calls, no cache | With a (font, string) cache |
-|---|---|---|---|---|
-| harfbuzzjs 1.6.2 (WASM) | 2.7 ms, first face and shape 2.5 ms | 15.7 us | 61.0 ms | ~5 ms (300 unique) |
-| `@napi-rs/canvas` 1.0.9 | 92 to 106 ms | 11.7 us | 61.1 ms | ~4 ms |
-| fontkit 2.0.4 | 21 to 33 ms | 130 to 170 us | 774 ms | ~40 ms |
+| Library                 | Import                              | Per unique string | 6,000 calls, no cache | With a (font, string) cache |
+| ----------------------- | ----------------------------------- | ----------------- | --------------------- | --------------------------- |
+| harfbuzzjs 1.6.2 (WASM) | 2.7 ms, first face and shape 2.5 ms | 15.7 us           | 61.0 ms               | ~5 ms (300 unique)          |
+| `@napi-rs/canvas` 1.0.9 | 92 to 106 ms                        | 11.7 us           | 61.1 ms               | ~4 ms                       |
+| fontkit 2.0.4           | 21 to 33 ms                         | 130 to 170 us     | 774 ms                | ~40 ms                      |
 
 Measurements are size-independent in font units, so the cache key is (font file hash, string, OpenType features),
 and results scale linearly with font size. Persisting the cache in `.lucent/` makes repeated `check` runs pay only
@@ -99,10 +99,10 @@ which is everything the layout needs.
 
 ### 3.6 Our layout modes do not need a layout engine (measured)
 
-| Layout | Import | 400 snapshots x 15 nodes |
-|---|---|---|
-| yoga-layout 3.2.1 (WASM flexbox) | 21.5 ms | 22.6 ms |
-| Own stack function (15 lines) | 0 | 0.5 ms |
+| Layout                           | Import  | 400 snapshots x 15 nodes |
+| -------------------------------- | ------- | ------------------------ |
+| yoga-layout 3.2.1 (WASM flexbox) | 21.5 ms | 22.6 ms                  |
+| Own stack function (15 lines)    | 0       | 0.5 ms                   |
 
 Both fit the budget. The spike 001 modes (`stack`, `row`, `split`, full-bleed layers, marks anchored to image points)
 are a vertical or horizontal sum of measured sizes plus gaps, centring and fixed slots. None needs wrapping, grow and
@@ -157,56 +157,56 @@ frame for the checks in 3.9.
 Pairwise overlap plus safe-area checks for 15 boxes on 2,160 sampled frames (6 minutes at 30 fps, every 5th frame):
 **2.9 ms**. Checks run on every settled state and on sampled frames during motion. Proposed rules:
 
-| Code | Rule | Box used |
-|---|---|---|
-| W301 | Two elements overlap by more than 2 percent of the smaller one | Logical box plus padding |
-| W302 | An element leaves the frame while not exiting | Logical box |
-| W303 | An element crosses the 5 percent safe margin | Logical box |
-| W304 | Text renders below 28 px at 1080p at any sampled frame | Font size times current scale |
+| Code | Rule                                                           | Box used                      |
+| ---- | -------------------------------------------------------------- | ----------------------------- |
+| W301 | Two elements overlap by more than 2 percent of the smaller one | Logical box plus padding      |
+| W302 | An element leaves the frame while not exiting                  | Logical box                   |
+| W303 | An element crosses the 5 percent safe margin                   | Logical box                   |
+| W304 | Text renders below 28 px at 1080p at any sampled frame         | Font size times current scale |
 
 Elements inside an exit or zoom-through transition are exempt, otherwise every `zoom` step would report W302 and
 W304.
 
 ### 3.10 How other tools do it (desk research)
 
-| Tool | Where layout happens | Can a checker see boxes before rendering? |
-|---|---|---|
-| Manim | Author code (`arrange`, `next_to`, coordinates); no layout engine | No |
-| Remotion | Chromium lays out HTML and CSS at render time; `@remotion/layout-utils` measures text in the DOM | Only inside a browser |
-| Motion Canvas | Its layout nodes use the browser's flexbox at runtime | Only inside a browser |
-| Satori | yoga for flexbox, a forked opentype.js for text, output SVG | Yes: the closest prior art to our approach |
-| Typst | Its own layout engine over shaped text, at compile time | Yes, internally |
+| Tool          | Where layout happens                                                                             | Can a checker see boxes before rendering?  |
+| ------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------ |
+| Manim         | Author code (`arrange`, `next_to`, coordinates); no layout engine                                | No                                         |
+| Remotion      | Chromium lays out HTML and CSS at render time; `@remotion/layout-utils` measures text in the DOM | Only inside a browser                      |
+| Motion Canvas | Its layout nodes use the browser's flexbox at runtime                                            | Only inside a browser                      |
+| Satori        | yoga for flexbox, a forked opentype.js for text, output SVG                                      | Yes: the closest prior art to our approach |
+| Typst         | Its own layout engine over shaped text, at compile time                                          | Yes, internally                            |
 
 ### 3.11 The whole `check` fits the budget (measured parts, estimated total)
 
-| Part | Cost |
-|---|---|
-| Node start | 10 to 20 ms (measured) |
-| Import yaml, zod, harfbuzzjs | 30 to 50 ms warm, 72 ms first run (measured) |
-| Text measurement, 300 unique strings, cold cache | ~5 ms (measured) |
-| Layout, 400 snapshots | 0.5 ms (measured) |
-| Labels, 12 scenes | < 1 ms (estimated from 37 us per scene) |
-| Rule checks, whole episode | 2.9 ms (measured) |
-| **Total** | **~60 to 100 ms (estimated)**, against a 200 ms budget |
+| Part                                             | Cost                                                   |
+| ------------------------------------------------ | ------------------------------------------------------ |
+| Node start                                       | 10 to 20 ms (measured)                                 |
+| Import yaml, zod, harfbuzzjs                     | 30 to 50 ms warm, 72 ms first run (measured)           |
+| Text measurement, 300 unique strings, cold cache | ~5 ms (measured)                                       |
+| Layout, 400 snapshots                            | 0.5 ms (measured)                                      |
+| Labels, 12 scenes                                | < 1 ms (estimated from 37 us per scene)                |
+| Rule checks, whole episode                       | 2.9 ms (measured)                                      |
+| **Total**                                        | **~60 to 100 ms (estimated)**, against a 200 ms budget |
 
 ## 4. Options compared
 
-| Decision | Option | Accuracy vs resvg | Speed | Verdict |
-|---|---|---|---|---|
-| Text measurement | **harfbuzzjs** | Exact (same shaping family as resvg's rustybuzz) | 2.7 ms import, 15.7 us per string | **Chosen** |
-| | `@napi-rs/canvas` | Exact when the face is unambiguous; picked the wrong face from a collection | ~100 ms import | Only if Skia is the rasteriser, for consistency |
-| | fontkit | Exact | 10x slower per string | Fallback |
-| | opentype.js 2.0.0 | Fails on Inter and JetBrains Mono | n/a | Rejected |
-| | Browser DOM | Exact for the preview only | Needs a browser | Rejected for `check` |
-| Layout | **Own small algorithm** | n/a | 0.5 ms per episode | **Chosen** |
-| | yoga-layout | n/a | 22 ms + 21 ms import | Upgrade path |
-| | taffy (WASM) | n/a | Not evaluated | Not needed |
-| Labels | Fixed side per label | Collides silently | Free | Rejected |
-| | **Greedy over 8 candidates, cost summed over sampled frames** | No conflicts on the real case | 37 us per scene | **Chosen** |
-| | Exhaustive (<= 4 labels) | Optimal | < 20 ms estimated | Use for small counts |
-| | Simulated annealing | Best on dense maps | Slower | Only if density grows |
-| Fonts | System fonts by family name | Wrong face observed | n/a | Rejected |
-| | **Bundled OFL static faces, resolved by file** | Exact | n/a | **Chosen** |
+| Decision         | Option                                                        | Accuracy vs resvg                                                           | Speed                             | Verdict                                         |
+| ---------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------- | ----------------------------------------------- |
+| Text measurement | **harfbuzzjs**                                                | Exact (same shaping family as resvg's rustybuzz)                            | 2.7 ms import, 15.7 us per string | **Chosen**                                      |
+|                  | `@napi-rs/canvas`                                             | Exact when the face is unambiguous; picked the wrong face from a collection | ~100 ms import                    | Only if Skia is the rasteriser, for consistency |
+|                  | fontkit                                                       | Exact                                                                       | 10x slower per string             | Fallback                                        |
+|                  | opentype.js 2.0.0                                             | Fails on Inter and JetBrains Mono                                           | n/a                               | Rejected                                        |
+|                  | Browser DOM                                                   | Exact for the preview only                                                  | Needs a browser                   | Rejected for `check`                            |
+| Layout           | **Own small algorithm**                                       | n/a                                                                         | 0.5 ms per episode                | **Chosen**                                      |
+|                  | yoga-layout                                                   | n/a                                                                         | 22 ms + 21 ms import              | Upgrade path                                    |
+|                  | taffy (WASM)                                                  | n/a                                                                         | Not evaluated                     | Not needed                                      |
+| Labels           | Fixed side per label                                          | Collides silently                                                           | Free                              | Rejected                                        |
+|                  | **Greedy over 8 candidates, cost summed over sampled frames** | No conflicts on the real case                                               | 37 us per scene                   | **Chosen**                                      |
+|                  | Exhaustive (<= 4 labels)                                      | Optimal                                                                     | < 20 ms estimated                 | Use for small counts                            |
+|                  | Simulated annealing                                           | Best on dense maps                                                          | Slower                            | Only if density grows                           |
+| Fonts            | System fonts by family name                                   | Wrong face observed                                                         | n/a                               | Rejected                                        |
+|                  | **Bundled OFL static faces, resolved by file**                | Exact                                                                       | n/a                               | **Chosen**                                      |
 
 ## 5. Recommendation
 
@@ -280,37 +280,37 @@ Scripts (scratchpad, not kept): `exp1.mjs` (accuracy, OFL faces), `exp1b.mjs` (a
 
 **Exp 1, OFL faces, 32 px, widths in px (measured).** `adv` is identical across fontkit, harfbuzzjs and Skia.
 
-| Face | String | adv | fontkit ink | Skia ink | resvg bbox | resvg pixels |
-|---|---|---|---|---|---|---|
-| Inter | no nucleus | 165.4 | 161.4 | 162.5 | 161.4 | 162 |
-| Inter | white blood cell · nucleus kept | 457.5 | 455.8 | 456.1 | 455.8 | 456 |
-| Inter | ≈ 30 trillion cells in a human body | 509.3 | 505.8 | 507.3 | 505.8 | 507 |
-| Inter | Human blood smear · Wright's stain | 539.2 | 534.0 | 535.3 | 534.0 | 535 |
-| Inter | AVATAR WAVE To Ty | 311.7 | 310.0 | 311.7 | 310.0 | 311 |
-| Inter | ATGGTGCATCTGACTCCTGAGGAG | 524.0 | 521.2 | 522.2 | 521.2 | 522 |
-| Inter Bold | no nucleus | 171.4 | 168.2 | 168.5 | 168.2 | 169 |
-| Inter Bold | white blood cell · nucleus kept | 471.4 | 470.3 | 471.7 | 470.3 | 471 |
-| Inter Bold | ≈ 30 trillion cells in a human body | 523.6 | 520.6 | 521.3 | 520.6 | 521 |
-| Inter Bold | Human blood smear · Wright's stain | 557.8 | 553.7 | 553.9 | 553.7 | 554 |
-| Inter Bold | AVATAR WAVE To Ty | 322.6 | 321.4 | 322.4 | 321.4 | 322 |
-| Inter Bold | ATGGTGCATCTGACTCCTGAGGAG | 537.4 | 535.1 | 536.4 | 535.1 | 536 |
-| JetBrains Mono | no nucleus | 192.0 | 186.3 | 187.8 | 186.3 | 187 |
-| JetBrains Mono | white blood cell · nucleus kept | 595.2 | 591.6 | 593.0 | 591.6 | 592 |
-| JetBrains Mono | ≈ 30 trillion cells in a human body | 672.0 | 668.0 | 668.8 | 668.0 | 669 |
-| JetBrains Mono | Human blood smear · Wright's stain | 652.8 | 646.9 | 648.6 | 646.9 | 647 |
-| JetBrains Mono | AVATAR WAVE To Ty | 326.4 | 323.1 | 324.2 | 323.1 | 324 |
-| JetBrains Mono | ATGGTGCATCTGACTCCTGAGGAG | 460.8 | 456.6 | 457.6 | 456.6 | 458 |
+| Face           | String                              | adv   | fontkit ink | Skia ink | resvg bbox | resvg pixels |
+| -------------- | ----------------------------------- | ----- | ----------- | -------- | ---------- | ------------ |
+| Inter          | no nucleus                          | 165.4 | 161.4       | 162.5    | 161.4      | 162          |
+| Inter          | white blood cell · nucleus kept     | 457.5 | 455.8       | 456.1    | 455.8      | 456          |
+| Inter          | ≈ 30 trillion cells in a human body | 509.3 | 505.8       | 507.3    | 505.8      | 507          |
+| Inter          | Human blood smear · Wright's stain  | 539.2 | 534.0       | 535.3    | 534.0      | 535          |
+| Inter          | AVATAR WAVE To Ty                   | 311.7 | 310.0       | 311.7    | 310.0      | 311          |
+| Inter          | ATGGTGCATCTGACTCCTGAGGAG            | 524.0 | 521.2       | 522.2    | 521.2      | 522          |
+| Inter Bold     | no nucleus                          | 171.4 | 168.2       | 168.5    | 168.2      | 169          |
+| Inter Bold     | white blood cell · nucleus kept     | 471.4 | 470.3       | 471.7    | 470.3      | 471          |
+| Inter Bold     | ≈ 30 trillion cells in a human body | 523.6 | 520.6       | 521.3    | 520.6      | 521          |
+| Inter Bold     | Human blood smear · Wright's stain  | 557.8 | 553.7       | 553.9    | 553.7      | 554          |
+| Inter Bold     | AVATAR WAVE To Ty                   | 322.6 | 321.4       | 322.4    | 321.4      | 322          |
+| Inter Bold     | ATGGTGCATCTGACTCCTGAGGAG            | 537.4 | 535.1       | 536.4    | 535.1      | 536          |
+| JetBrains Mono | no nucleus                          | 192.0 | 186.3       | 187.8    | 186.3      | 187          |
+| JetBrains Mono | white blood cell · nucleus kept     | 595.2 | 591.6       | 593.0    | 591.6      | 592          |
+| JetBrains Mono | ≈ 30 trillion cells in a human body | 672.0 | 668.0       | 668.8    | 668.0      | 669          |
+| JetBrains Mono | Human blood smear · Wright's stain  | 652.8 | 646.9       | 648.6    | 646.9      | 647          |
+| JetBrains Mono | AVATAR WAVE To Ty                   | 326.4 | 323.1       | 324.2    | 323.1      | 324          |
+| JetBrains Mono | ATGGTGCATCTGACTCCTGAGGAG            | 460.8 | 456.6       | 457.6    | 456.6      | 458          |
 
 **Exp 1b, macOS faces, 32 px (measured).** fontkit and resvg given the face explicitly; Skia given family and
 weight.
 
-| Face | String | fontkit adv | Skia adv | fontkit ink | resvg bbox |
-|---|---|---|---|---|---|
-| AvenirNext-Regular | no nucleus | 158.5 | **166.8** | 154.3 | 154.3 |
-| AvenirNext-Regular | white blood cell · nucleus kept | 442.5 | **473.3** | 441.2 | 441.2 |
-| AvenirNext-Regular | ATGGTGCATCTGACTCCTGAGGAG | 521.9 | 522.2 | 518.7 | 518.7 |
-| AvenirNext-Bold | no nucleus | 166.8 | 166.8 | 163.9 | 163.9 |
-| Menlo-Regular | no nucleus | 192.7 | 192.7 | 186.4 | 186.4 |
+| Face               | String                          | fontkit adv | Skia adv  | fontkit ink | resvg bbox |
+| ------------------ | ------------------------------- | ----------- | --------- | ----------- | ---------- |
+| AvenirNext-Regular | no nucleus                      | 158.5       | **166.8** | 154.3       | 154.3      |
+| AvenirNext-Regular | white blood cell · nucleus kept | 442.5       | **473.3** | 441.2       | 441.2      |
+| AvenirNext-Regular | ATGGTGCATCTGACTCCTGAGGAG        | 521.9       | 522.2     | 518.7       | 518.7      |
+| AvenirNext-Bold    | no nucleus                      | 166.8       | 166.8     | 163.9       | 163.9      |
+| Menlo-Regular      | no nucleus                      | 192.7       | 192.7     | 186.4       | 186.4      |
 
 **Exp 3 label geometry.** Blood smear 3264 x 2448 in cover fit at 1920 x 1080; points `rbc_1 (0.26, 0.30, 0.06)`,
 `rbc_2 (0.75, 0.62, 0.06)`, `wbc (0.46, 0.41, 0.11)`; label boxes 170 x 44, 170 x 44, 470 x 44; drift of 6 percent

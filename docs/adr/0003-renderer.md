@@ -19,13 +19,13 @@ Two problems against the goals:
 
 ## Options
 
-| Option | For | Against |
-|---|---|---|
-| Remotion 4 (headless Chromium) | Full HTML and CSS, Studio preview, very active | Per-frame browser overhead; licence |
-| Own headless Chromium (Playwright 1.63, Apache-2.0) | Permissive, full HTML and CSS | Same per-frame overhead |
+| Option                                                                                        | For                                                                          | Against                                                                     |
+| --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Remotion 4 (headless Chromium)                                                                | Full HTML and CSS, Studio preview, very active                               | Per-frame browser overhead; licence                                         |
+| Own headless Chromium (Playwright 1.63, Apache-2.0)                                           | Permissive, full HTML and CSS                                                | Same per-frame overhead                                                     |
 | **SVG display list rasterised by resvg** (`@resvg/resvg-js` 2.6, MPL-2.0; `resvg` crate 0.48) | No browser, native Rust speed, deterministic, parallel across worker threads | Only SVG features resvg supports; photos must not be re-decoded every frame |
-| **SVG display list drawn on Skia** (`@napi-rs/canvas` 1.0, MIT) | Native Skia speed, decoded images stay in memory across frames | We translate our SVG subset to Canvas calls ourselves |
-| Native Rust renderer (vello, tiny-skia) | Fastest possible | Rejected with ADR 0001: months of work |
+| **SVG display list drawn on Skia** (`@napi-rs/canvas` 1.0, MIT)                               | Native Skia speed, decoded images stay in memory across frames               | We translate our SVG subset to Canvas calls ourselves                       |
+| Native Rust renderer (vello, tiny-skia)                                                       | Fastest possible                                                             | Rejected with ADR 0001: months of work                                      |
 
 ## Decision
 

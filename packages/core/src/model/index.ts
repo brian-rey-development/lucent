@@ -1,0 +1,27 @@
+export { WORDS_PER_SECOND } from "./constants.ts";
+export { paragraphsOf } from "./paragraphs-of.ts";
+export type {
+  Asset,
+  Assets,
+  AssetsSource,
+  ChangeStep,
+  Cue,
+  DeclaredElement,
+  Direction,
+  FileAccess,
+  FileFound,
+  FileRead,
+  KeptElement,
+  NarrationItem,
+  Paragraph,
+  Point,
+  Scene,
+  Settings,
+  SourceLine,
+  Step,
+  StepAt,
+  Translation,
+  UnparsedStep,
+  VerbStep,
+  Video,
+} from "./types.ts";

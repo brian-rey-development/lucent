@@ -10,12 +10,12 @@ of its duration. Every rewrite of a sentence silently moved the visual away from
 
 ## Options
 
-| Option | Problem |
-|---|---|
-| Absolute timestamps | Break on every edit; agents cannot know audio lengths |
-| Line index plus fraction (prototype) | Breaks when a sentence changes length or order |
-| Estimated reading speed | Drifts from real speech by seconds over a scene |
-| **Cue phrases resolved against word timings** | Needs a voice engine with timings (ADR 0004) |
+| Option                                        | Problem                                               |
+| --------------------------------------------- | ----------------------------------------------------- |
+| Absolute timestamps                           | Break on every edit; agents cannot know audio lengths |
+| Line index plus fraction (prototype)          | Breaks when a sentence changes length or order        |
+| Estimated reading speed                       | Drifts from real speech by seconds over a scene       |
+| **Cue phrases resolved against word timings** | Needs a voice engine with timings (ADR 0004)          |
 
 ## Decision
 

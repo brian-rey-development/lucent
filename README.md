@@ -1,29 +1,28 @@
 # Lucent
 
-Local-first engine for narrated, animated explainer videos, designed to be written by AI agents first and people
-second.
+[![CI](https://github.com/brian-rey-development/lucent/actions/workflows/ci.yml/badge.svg)](https://github.com/brian-rey-development/lucent/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%E2%89%A524-339933.svg)](.nvmrc)
 
-You write a short Markdown file: narration as paragraphs, with the words that trigger visuals in `[brackets]`, and one
-small block of visual steps per scene. Lucent voices it locally, lays it out, animates the differences between
-states, checks it for problems as text, and renders an mp4 with soft subtitle tracks.
+Narrated explainer videos from a Markdown file. Local first, and designed for AI agents to write.
 
-> Status: research. No engine code yet. The design is in `docs/`, backed by measured spikes.
+You write what is said and what is on screen. Lucent owns timing, layout, motion, voice and subtitles, and checks the
+file as text in milliseconds, so an agent fixes mistakes from a one-line error instead of a rendered frame.
 
-## Goals
+> **Status:** phase 0, the foundation, is done: the format, `lucent check` and `lucent catalog` work today. Voice and
+> rendering come next; see the [roadmap](#roadmap).
 
-Local first, fast, performant, and cheap for agents in time and tokens. Every budget is in
-[`docs/goals.md`](docs/goals.md), for example:
-
-| Budget | Target |
-|---|---|
-| Final render, 1080p30 | <= 0.25 s per video second (measured path: 0.07 to 0.16 s) |
-| `check` after every edit | < 200 ms, never renders, never voices |
-| One error message | <= 40 tokens, with a concrete fix |
-| MCP tool definitions | <= 600 tokens (measured: 437) |
-
-## What a video looks like
+## A video is one file
 
 ````markdown
+---
+lucent: 0
+title: Where the instructions live
+voice: kokoro/am_fenrir
+subtitles: [en, es]
+assets: assets/images.yaml
+---
+
 ## blood
 
 These pale discs are [red blood cells]. Look for a purple dot inside them and you won't find one.
@@ -32,45 +31,96 @@ These pale discs are [red blood cells]. Look for a purple dot inside them and yo
 ```scene
 do:
   - photo: blood
-    focus: wbc
-    drift: slow
+    center: wbc
   - at: red blood cells
     ring: [$blood/rbc_1, $blood/rbc_2]
     label: no nucleus
 ```
 ````
 
-No coordinates, no timestamps. Timing comes from the voice's word timings, layout from the engine, motion from
-defaults.
+- Each paragraph is spoken; `[red blood cells]` marks a cue.
+- `at: red blood cells` starts the step when that phrase is spoken.
+- `$blood/rbc_1` is a named point on the photo, defined once in the asset manifest.
 
-## Architecture in one picture
+Coordinates, timestamps and easing stay out of the file. The full reference is [`docs/format.md`](docs/format.md).
 
+## Quickstart
+
+Requires Node 24 and pnpm.
+
+```sh
+git clone https://github.com/brian-rey-development/lucent.git
+cd lucent
+pnpm install
+pnpm build
+pnpm -s lucent check examples/halden-ep01/ep01.lucent.md
 ```
-video.lucent.md
-  -> parse, validate, schedule, layout, check     TypeScript core      (`check` stops here)
-  -> voice: sentences -> wav + word timings        Kokoro-82M, Python sidecar
-  -> compile tracks -> draw SVG per frame          TypeScript components, pure functions of (state, time)
-  -> rasterise                                     Skia (@napi-rs/canvas), worker threads
-  -> encode scene segments, join, mux audio + subs ffmpeg (libx264), one continuous audio track
+
+```text
+examples/halden-ep01/ep01.lucent.md: 0 errors, 0 warnings, ~1:35 estimated
+blood     ~0:00  50.4s  "red blood cells" +8.9s; "thirty trillion" +26.6s; "white blood cell" +45.4s
+molecule  ~0:50  45.0s  "Zoom in" +8.9s; "two millionths" +18.5s; "bases" +25.4s; "order of those letters" +33.1s
 ```
 
-Agents use an MCP server with five tools (`lucent_guide`, `lucent_catalog`, `lucent_check`, `lucent_snap`,
-`lucent_render`); people and CI use the `lucent` CLI. Both call the same core.
+Each scene line shows its start, its length and when each cue is spoken, counted from the scene start. Each problem is
+one line with a code, a position and a fix:
+
+```text
+E501 18:93 blood "%" cannot be spoken; fix: write "percent"
+E204 29:9 blood.do[1].at cue "red blod cells" is not marked; fix: use "red blood cells"
+E201 30:12 blood.do[1].ring[0] blood has no point rbc3; fix: use rbc_1
+```
+
+`pnpm -s` keeps pnpm's own banner out of the output. `pnpm link --global` in `apps/cli` puts `lucent` on your path.
+
+## Commands
+
+| Command                                                        | Output                                      |
+| -------------------------------------------------------------- | ------------------------------------------- |
+| `lucent check <file> [--scene <id>] [--json]`                  | Diagnostics and the estimated timeline      |
+| `lucent catalog`                                               | Every verb, one line each, about 500 tokens |
+| `lucent catalog <verb> [--schema]`                             | One verb, or its JSON Schema                |
+| `lucent catalog --codes`                                       | Every diagnostic code                       |
+| `lucent --help`, `lucent <command> --help`, `lucent --version` | Help and version                            |
+
+`check` exits 0 when the file has no errors (warnings allowed), 1 when it has errors, 2 on bad usage, 3 when the file
+cannot be read, and 70 on an internal error.
+
+## Design
+
+| Goal             | Budget                                 | Approach                                                                      |
+| ---------------- | -------------------------------------- | ----------------------------------------------------------------------------- |
+| Cheap for agents | Catalog ≤ 1,500 tokens, one error ≤ 40 | One-line catalog and errors, counted in CI with `o200k_base`                  |
+| Fast feedback    | `check` < 200 ms                       | Text checks first, pixels last. About 70 ms for a cold CLI run on the example |
+| Fast render      | ≤ 0.25 s per video second at 1080p30   | SVG display list rasterised by Skia, cached per scene                         |
+| Local first      | No account, no network after install   | Kokoro-82M voice in a local sidecar, ffmpeg                                   |
+
+Budgets live in [`docs/goals.md`](docs/goals.md), decisions in [`docs/adr/`](docs/adr/), and the measurements behind
+them in [`docs/spikes/`](docs/spikes/).
+
+## Roadmap
+
+| Phase         | Scope                                                            | Status  |
+| ------------- | ---------------------------------------------------------------- | ------- |
+| 0. Foundation | Format, `check`, catalog, estimated timeline                     | Done    |
+| 1. Voice      | Kokoro-82M sidecar, word timings, exact cue times                | Next    |
+| 2. Render     | Layout, motion, Skia rasteriser, ffmpeg segments, soft subtitles | Planned |
+| 3. Agents     | MCP server, contact sheets, shared background process            | Planned |
 
 ## Repository
 
-| Path | What |
-|---|---|
-| [`docs/goals.md`](docs/goals.md) | Goals and budgets every decision is judged against |
-| [`docs/adr/`](docs/adr/) | Architecture decision records |
-| [`docs/spikes/`](docs/spikes/) | Research spikes: questions answered with sources and measurements |
-| [`prototypes/manim/`](prototypes/manim/) | The Manim prototype that produced episode 1 of the Halden Genomics lessons; frozen reference and first customer |
+| Path                                   | Contents                                     |
+| -------------------------------------- | -------------------------------------------- |
+| [`packages/core`](packages/core)       | The engine, free of I/O                      |
+| [`apps/cli`](apps/cli)                 | The `lucent` command                         |
+| [`examples/`](examples)                | Videos checked clean in CI                   |
+| [`docs/`](docs)                        | Format reference, goals, ADRs, spikes, plans |
+| [`prototypes/manim`](prototypes/manim) | The frozen Manim prototype Lucent replaces   |
 
-## First customer
+## Contributing
 
-The Halden Genomics lessons: a 10-episode series on the biology and data behind a genetic diagnosis
-(`prototypes/manim/SERIES.md`).
+See [CONTRIBUTING.md](CONTRIBUTING.md). Report vulnerabilities as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+[MIT](LICENSE)

@@ -11,13 +11,13 @@ chose this voice by ear. Rendering must work offline.
 
 ## Options
 
-| Option | For | Against |
-|---|---|---|
-| **Kokoro in a Python sidecar** | Works today, word timings included, voice already chosen | A second runtime; PyTorch is large |
-| `kokoro-js` in Node | One runtime | No word timings; last release May 2025 |
-| `kokoro-js` plus forced alignment (whisper via transformers.js) | One runtime | Two models, alignment errors on names and numbers, slower |
-| Kokoro ONNX in Node (`onnxruntime-node`) | One runtime, fast | Unverified whether the export exposes the durations timings come from |
-| Cloud TTS | High quality | Not local, costs money, breaks offline rendering |
+| Option                                                          | For                                                      | Against                                                               |
+| --------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------- |
+| **Kokoro in a Python sidecar**                                  | Works today, word timings included, voice already chosen | A second runtime; PyTorch is large                                    |
+| `kokoro-js` in Node                                             | One runtime                                              | No word timings; last release May 2025                                |
+| `kokoro-js` plus forced alignment (whisper via transformers.js) | One runtime                                              | Two models, alignment errors on names and numbers, slower             |
+| Kokoro ONNX in Node (`onnxruntime-node`)                        | One runtime, fast                                        | Unverified whether the export exposes the durations timings come from |
+| Cloud TTS                                                       | High quality                                             | Not local, costs money, breaks offline rendering                      |
 
 ## Decision
 

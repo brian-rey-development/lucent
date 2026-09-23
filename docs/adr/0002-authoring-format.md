@@ -20,13 +20,13 @@ a poor fit for prose.
 
 ## Options
 
-| Option | Overhead tokens | Main problem |
-|---|---|---|
-| Plain YAML | 398 | Prose breaks parsing, one case silently |
-| YAML with all prose quoted | 414 | Noisy to read and review; relies on a formatter |
-| **Markdown prose + one YAML block per scene** | **338** | Cue phrases are written twice (in prose and in `at:`) |
-| Markdown with inline directives | 220 | Structure collapses into attribute strings, a private mini-language |
-| Code (TSX, as Remotion and Motion Canvas) | Highest | Not statically checkable, executes agent-written code |
+| Option                                        | Overhead tokens | Main problem                                                        |
+| --------------------------------------------- | --------------- | ------------------------------------------------------------------- |
+| Plain YAML                                    | 398             | Prose breaks parsing, one case silently                             |
+| YAML with all prose quoted                    | 414             | Noisy to read and review; relies on a formatter                     |
+| **Markdown prose + one YAML block per scene** | **338**         | Cue phrases are written twice (in prose and in `at:`)               |
+| Markdown with inline directives               | 220             | Structure collapses into attribute strings, a private mini-language |
+| Code (TSX, as Remotion and Motion Canvas)     | Highest         | Not statically checkable, executes agent-written code               |
 
 ## Decision
 

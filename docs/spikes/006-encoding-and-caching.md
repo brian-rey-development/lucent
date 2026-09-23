@@ -1,12 +1,12 @@
 # Spike 006: Encoding, segments and caching
 
-| | |
-|---|---|
-| Status | Complete |
-| Date | 2026-09-23 |
-| Question | How do raw frames become the final mp4 fast, with per-scene caching, correct audio and soft EN/ES subtitle tracks? |
-| Informs | ADR 0007 (scene segment cache), ADR 0008 (soft subtitle tracks) |
-| Machine | Apple M5 Pro (15 CPU cores: 5 performance, 10 efficiency; 16 GPU cores), 24 GB, macOS (Darwin 25.4.0), ffmpeg 8.1.2 (Homebrew, built with libx264, libvmaf, VideoToolbox, AudioToolbox; no libass), Node 24.21.0 |
+|          |                                                                                                                                                                                                                  |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status   | Complete                                                                                                                                                                                                         |
+| Date     | 2026-09-23                                                                                                                                                                                                       |
+| Question | How do raw frames become the final mp4 fast, with per-scene caching, correct audio and soft EN/ES subtitle tracks?                                                                                               |
+| Informs  | ADR 0007 (scene segment cache), ADR 0008 (soft subtitle tracks)                                                                                                                                                  |
+| Machine  | Apple M5 Pro (15 CPU cores: 5 performance, 10 efficiency; 16 GPU cores), 24 GB, macOS (Darwin 25.4.0), ffmpeg 8.1.2 (Homebrew, built with libx264, libvmaf, VideoToolbox, AudioToolbox; no libass), Node 24.21.0 |
 
 Every number is marked **(measured)** or **(estimated)**. Measured numbers come from 10-second, 300-frame clips at
 1080p30 and include ffmpeg start-up (about 0.05 to 0.1 s), so throughput figures are lower bounds for long scenes.
@@ -54,14 +54,14 @@ Hashing benchmarked in Node 24. Full commands are in the appendix.
 
 ### F1. Hardware H.264 (VideoToolbox) tops out at about 250 fps and does not scale with parallel sessions
 
-| Encoder, source photo | Wall for 300 frames | Throughput | CPU per frame |
-|---|---|---|---|
-| `h264_videotoolbox`, RGBA in | 1.16 s | 258 fps | 6.3 ms (measured) |
-| `h264_videotoolbox`, NV12 in | 1.14 s | 263 fps | 1.3 ms (measured) |
-| `hevc_videotoolbox`, RGBA in | 1.25 s | 240 fps | 6.3 ms (measured) |
-| `libx264 veryfast`, RGBA in | 0.89 to 0.98 s | 306 to 337 fps | 17.5 ms (measured) |
-| `libx264 veryfast`, NV12 in | 0.53 s | 565 fps | 16.3 ms (measured) |
-| `libx264 medium`, RGBA in | 1.64 s | 183 fps | 60.4 ms (measured) |
+| Encoder, source photo        | Wall for 300 frames | Throughput     | CPU per frame      |
+| ---------------------------- | ------------------- | -------------- | ------------------ |
+| `h264_videotoolbox`, RGBA in | 1.16 s              | 258 fps        | 6.3 ms (measured)  |
+| `h264_videotoolbox`, NV12 in | 1.14 s              | 263 fps        | 1.3 ms (measured)  |
+| `hevc_videotoolbox`, RGBA in | 1.25 s              | 240 fps        | 6.3 ms (measured)  |
+| `libx264 veryfast`, RGBA in  | 0.89 to 0.98 s      | 306 to 337 fps | 17.5 ms (measured) |
+| `libx264 veryfast`, NV12 in  | 0.53 s              | 565 fps        | 16.3 ms (measured) |
+| `libx264 medium`, RGBA in    | 1.64 s              | 183 fps        | 60.4 ms (measured) |
 
 Parallel VideoToolbox sessions share one hardware engine: 1, 2, 3 and 4 concurrent encodes gave 250, 262, 266 and
 268 fps in aggregate (measured). Parallel x264 encodes scale with cores: 3 concurrent gave 792 fps (measured).
@@ -74,18 +74,18 @@ VideoToolbox has one engine.
 
 `-q:v` (constant quality) starves flat content of bits:
 
-| Setting | photo size / VMAF | flat size / VMAF |
-|---|---|---|
-| VT `-q:v 65` | 1.38 MB / 92.1 | 53 KB / **78.0** (every frame) |
-| VT `-q:v 75` | 2.78 MB / 95.1 | 59 KB / 90.4 |
-| VT `-q:v 85` | 8.21 MB / 96.7 | 121 KB / 96.6 |
-| VT `-b:v 6M -g 60` | 5.25 MB / 96.2 | 44 KB / 98.5 |
-| VT `-b:v 8M -g 60` | 6.71 MB / 96.4 | 47 KB / 97.9 |
-| x264 veryfast CRF 18 `-g 60` | **1.60 MB / 95.1** | 39 KB / 96.4 |
-| x264 veryfast CRF 16 `-g 60` | 2.29 MB / 95.8 | 37 KB / 94.6 |
-| x264 faster CRF 18 `-g 60` | 2.46 MB / 96.0 | 37 KB / 94.9 |
-| x264 faster CRF 16 `-g 60` | 3.26 MB / 96.3 | 38 KB / 97.0 |
-| VT HEVC `-q:v 75` | 1.40 MB / 94.5 | not tested |
+| Setting                      | photo size / VMAF  | flat size / VMAF               |
+| ---------------------------- | ------------------ | ------------------------------ |
+| VT `-q:v 65`                 | 1.38 MB / 92.1     | 53 KB / **78.0** (every frame) |
+| VT `-q:v 75`                 | 2.78 MB / 95.1     | 59 KB / 90.4                   |
+| VT `-q:v 85`                 | 8.21 MB / 96.7     | 121 KB / 96.6                  |
+| VT `-b:v 6M -g 60`           | 5.25 MB / 96.2     | 44 KB / 98.5                   |
+| VT `-b:v 8M -g 60`           | 6.71 MB / 96.4     | 47 KB / 97.9                   |
+| x264 veryfast CRF 18 `-g 60` | **1.60 MB / 95.1** | 39 KB / 96.4                   |
+| x264 veryfast CRF 16 `-g 60` | 2.29 MB / 95.8     | 37 KB / 94.6                   |
+| x264 faster CRF 18 `-g 60`   | 2.46 MB / 96.0     | 37 KB / 94.9                   |
+| x264 faster CRF 16 `-g 60`   | 3.26 MB / 96.3     | 38 KB / 97.0                   |
+| VT HEVC `-q:v 75`            | 1.40 MB / 94.5     | not tested                     |
 
 All measured, for 10 s of video. Flat-content VMAF scores vary by about 2 points between settings that look
 equivalent, so treat anything above 94 as equivalent there. On photos, x264 veryfast reaches VMAF 95 at about a
@@ -112,11 +112,11 @@ Conclusion: keep piping RGBA and let ffmpeg convert. Revisit only if profiling s
 ffmpeg converts RGB to YUV with the BT.601 matrix by default and writes no colour tags. HD players decode with
 BT.709. Decoding solid frames as BT.709 (measured):
 
-| Source colour | Default, untagged | Explicit BT.709 and tagged |
-|---|---|---|
-| `#B4432F` accent | `#BE4D2C` | `#B3432F` |
-| `#1F8FC4` DNA cyan | `#1486C7` | `#208FC5` |
-| `#1B9E77` base A green | `#0F8F76` | `#1A9D76` |
+| Source colour          | Default, untagged | Explicit BT.709 and tagged |
+| ---------------------- | ----------------- | -------------------------- |
+| `#B4432F` accent       | `#BE4D2C`         | `#B3432F`                  |
+| `#1F8FC4` DNA cyan     | `#1486C7`         | `#208FC5`                  |
+| `#1B9E77` base A green | `#0F8F76`         | `#1A9D76`                  |
 
 The default shifts the colours that the series uses to mean things (A is green, DNA is cyan). The fix:
 `-vf scale=out_color_matrix=bt709:out_range=tv` plus `-colorspace bt709 -color_primaries bt709 -color_trc bt709
@@ -127,15 +127,15 @@ The default shifts the colours that the series uses to mean things (A is green, 
 Three segments of 97, 113 and 90 frames (deliberately uneven), encoded separately with identical settings and
 `-video_track_timescale 15360`, joined with the concat demuxer and `-c copy` (all measured):
 
-| Check | libx264 veryfast (B-frames on) | h264_videotoolbox 8 Mb/s |
-|---|---|---|
-| Frames in joined file | 300 | 300 |
-| Duration | 10.000000 s | 10.000000 s |
-| Timestamp step | 0.03333 s everywhere, none non-monotonic | same |
-| Keyframes | at frames 0, 97, 210 | at every 12th frame plus 97 and 210 |
-| Decoded frames identical to decoded segments (`framemd5`) | yes | yes |
-| Full decode errors | none | none |
-| AVFoundation (QuickTime/Safari stack) | playable, 300 frames decoded | playable |
+| Check                                                     | libx264 veryfast (B-frames on)           | h264_videotoolbox 8 Mb/s            |
+| --------------------------------------------------------- | ---------------------------------------- | ----------------------------------- |
+| Frames in joined file                                     | 300                                      | 300                                 |
+| Duration                                                  | 10.000000 s                              | 10.000000 s                         |
+| Timestamp step                                            | 0.03333 s everywhere, none non-monotonic | same                                |
+| Keyframes                                                 | at frames 0, 97, 210                     | at every 12th frame plus 97 and 210 |
+| Decoded frames identical to decoded segments (`framemd5`) | yes                                      | yes                                 |
+| Full decode errors                                        | none                                     | none                                |
+| AVFoundation (QuickTime/Safari stack)                     | playable, 300 frames decoded             | playable                            |
 
 Joining 36 segments into a 6-minute file took 0.30 s (measured). Each segment starts on an IDR frame because each is
 a fresh encoder session; x264's default closed GOP was enough.
@@ -146,12 +146,12 @@ Design A put each scene's audio (a slice of a chirp) in its segment as AAC and j
 the video first, then muxed one continuous WAV encoded once. Offsets of the decoded audio against the source
 (measured):
 
-| Design, encoder | At start | After join 1 | After join 2 | Gap at joins | Audio length vs video |
-|---|---|---|---|---|---|
-| A, `aac` | +21.3 ms | +52.0 ms | +82.7 ms | silence (RMS 0.000 to 0.001) | +21 ms |
-| A, `aac_at` | +44.0 ms | +83.3 ms | +37.4 ms | silence at join 1 | +71 ms, video grew to 10.019 s |
-| B, `aac` | 0.00 ms | 0.00 ms | 0.00 ms | none | +5 ms of tail padding |
-| B, `aac_at` | 0.00 ms | 0.00 ms | 0.00 ms | none | +25 ms of tail padding |
+| Design, encoder | At start | After join 1 | After join 2 | Gap at joins                 | Audio length vs video          |
+| --------------- | -------- | ------------ | ------------ | ---------------------------- | ------------------------------ |
+| A, `aac`        | +21.3 ms | +52.0 ms     | +82.7 ms     | silence (RMS 0.000 to 0.001) | +21 ms                         |
+| A, `aac_at`     | +44.0 ms | +83.3 ms     | +37.4 ms     | silence at join 1            | +71 ms, video grew to 10.019 s |
+| B, `aac`        | 0.00 ms  | 0.00 ms      | 0.00 ms      | none                         | +5 ms of tail padding          |
+| B, `aac_at`     | 0.00 ms  | 0.00 ms      | 0.00 ms      | none                         | +25 ms of tail padding         |
 
 Why: an AAC encoder prepends priming samples (encoder delay) and pads the last frame to 1,024 samples. A single file
 records this in its edit list, but joining with stream copy keeps every segment's priming and padding. The error
@@ -180,12 +180,12 @@ Elsewhere:
 
 ### F8. Hashing is not a bottleneck, and node:crypto is enough
 
-| Implementation | Throughput | 1 MB photo | 60 s voice WAV (5.8 MB) | 26 KB compiled scene |
-|---|---|---|---|---|
-| `node:crypto` SHA-256 | 2.49 GB/s | 0.30 ms | 1.65 ms | 0.008 ms |
-| `@napi-rs/blake-hash` BLAKE3 (native) | 2.56 GB/s | 0.38 ms | 2.23 ms | 0.011 ms |
-| `hash-wasm` BLAKE3 (WebAssembly) | 1.19 GB/s | 0.84 ms | 4.87 ms | 0.023 ms |
-| `@noble/hashes` BLAKE3 (pure JS) | 0.09 GB/s | 11.2 ms | 55.4 ms | 0.248 ms |
+| Implementation                        | Throughput | 1 MB photo | 60 s voice WAV (5.8 MB) | 26 KB compiled scene |
+| ------------------------------------- | ---------- | ---------- | ----------------------- | -------------------- |
+| `node:crypto` SHA-256                 | 2.49 GB/s  | 0.30 ms    | 1.65 ms                 | 0.008 ms             |
+| `@napi-rs/blake-hash` BLAKE3 (native) | 2.56 GB/s  | 0.38 ms    | 2.23 ms                 | 0.011 ms             |
+| `hash-wasm` BLAKE3 (WebAssembly)      | 1.19 GB/s  | 0.84 ms    | 4.87 ms                 | 0.023 ms             |
+| `@noble/hashes` BLAKE3 (pure JS)      | 0.09 GB/s  | 11.2 ms    | 55.4 ms                 | 0.248 ms             |
 
 All measured, single-threaded. On this CPU, SHA-256 uses hardware instructions and matches native BLAKE3, so a
 dependency buys nothing. The `blake3` npm package (last release 2022) **fails to install**: it depends on
@@ -194,14 +194,14 @@ before hashing makes unchanged assets nearly free.
 
 ### F9. End to end, encoding is the bottleneck and still inside the budget
 
-| Stage | Throughput | Source |
-|---|---|---|
-| Skia rasterisation, 15 workers | about 1,560 fps (0.64 ms per frame) | Spike 002 (measured there) |
-| RGBA pipe into ffmpeg | about 460 fps per pipe | F3 (measured) |
-| VideoToolbox H.264 | about 250 fps, no scaling with sessions | F1 (measured) |
-| x264 veryfast, one encoder under full CPU load | about 320 fps | F1 (measured) |
-| x264 veryfast, 3 scene encoders in parallel, idle CPU | about 790 fps | F1 (measured) |
-| **Budget** | **133 fps** | goals.md |
+| Stage                                                 | Throughput                              | Source                     |
+| ----------------------------------------------------- | --------------------------------------- | -------------------------- |
+| Skia rasterisation, 15 workers                        | about 1,560 fps (0.64 ms per frame)     | Spike 002 (measured there) |
+| RGBA pipe into ffmpeg                                 | about 460 fps per pipe                  | F3 (measured)              |
+| VideoToolbox H.264                                    | about 250 fps, no scaling with sessions | F1 (measured)              |
+| x264 veryfast, one encoder under full CPU load        | about 320 fps                           | F1 (measured)              |
+| x264 veryfast, 3 scene encoders in parallel, idle CPU | about 790 fps                           | F1 (measured)              |
+| **Budget**                                            | **133 fps**                             | goals.md                   |
 
 With rasterisation and encoding sharing the CPU, the combined x264 path needs about 30 ms of CPU per frame (9.6 ms
 rasterising, 17.5 ms encoding, 2 to 3 ms converting), or about 2 ms per frame across 15 cores: roughly 400 to 500 fps
@@ -214,30 +214,30 @@ join and mux (estimated).
 
 ### Video encoder
 
-| Option | Throughput | CPU | Size for VMAF about 95 on photos | Flat content | Portability |
-|---|---|---|---|---|---|
-| **libx264 veryfast, CRF 18, `-g 60`** | 306 to 565 fps each; scales with parallel scenes | 17.5 ms per frame | **1.60 MB per 10 s** | Good | Everywhere (Linux, CI) |
-| libx264 faster, CRF 16 to 18 | Similar wall time, twice the CPU | about 29 ms per frame | 2.46 to 3.26 MB | Good | Everywhere |
-| libx264 medium, CRF 18 | 183 fps | 60 ms per frame | 2.63 MB | Good | Everywhere |
-| h264_videotoolbox, 6 Mb/s, `-g 60` | about 250 fps total, one engine | about 1 to 6 ms per frame | 5.25 MB | Good | Apple only |
-| h264_videotoolbox, `-q:v` | about 250 fps | same | 2.78 MB at q75 | **Fails** (VMAF 78 at q65) | Apple only |
-| hevc_videotoolbox | about 240 fps | same | 1.40 MB at q75 (VMAF 94.5) | Not tested | Weaker browser support |
+| Option                                | Throughput                                       | CPU                       | Size for VMAF about 95 on photos | Flat content               | Portability            |
+| ------------------------------------- | ------------------------------------------------ | ------------------------- | -------------------------------- | -------------------------- | ---------------------- |
+| **libx264 veryfast, CRF 18, `-g 60`** | 306 to 565 fps each; scales with parallel scenes | 17.5 ms per frame         | **1.60 MB per 10 s**             | Good                       | Everywhere (Linux, CI) |
+| libx264 faster, CRF 16 to 18          | Similar wall time, twice the CPU                 | about 29 ms per frame     | 2.46 to 3.26 MB                  | Good                       | Everywhere             |
+| libx264 medium, CRF 18                | 183 fps                                          | 60 ms per frame           | 2.63 MB                          | Good                       | Everywhere             |
+| h264_videotoolbox, 6 Mb/s, `-g 60`    | about 250 fps total, one engine                  | about 1 to 6 ms per frame | 5.25 MB                          | Good                       | Apple only             |
+| h264_videotoolbox, `-q:v`             | about 250 fps                                    | same                      | 2.78 MB at q75                   | **Fails** (VMAF 78 at q65) | Apple only             |
+| hevc_videotoolbox                     | about 240 fps                                    | same                      | 1.40 MB at q75 (VMAF 94.5)       | Not tested                 | Weaker browser support |
 
 ### Audio
 
-| Option | Sync at joins | Cost |
-|---|---|---|
-| Per-scene AAC inside segments | Drifts about 30 ms per join, silence at joins | None extra |
-| **One continuous track, encoded once, muxed after the join** | Exact (0.00 ms) | 0.6 s per 6 minutes with `aac_at` |
-| Per-scene PCM, joined, then encoded once | Exact (same as above) | Same, with per-scene audio caching |
+| Option                                                       | Sync at joins                                 | Cost                               |
+| ------------------------------------------------------------ | --------------------------------------------- | ---------------------------------- |
+| Per-scene AAC inside segments                                | Drifts about 30 ms per join, silence at joins | None extra                         |
+| **One continuous track, encoded once, muxed after the join** | Exact (0.00 ms)                               | 0.6 s per 6 minutes with `aac_at`  |
+| Per-scene PCM, joined, then encoded once                     | Exact (same as above)                         | Same, with per-scene audio caching |
 
 ### Hashing
 
-| Option | Verdict |
-|---|---|
+| Option                    | Verdict                                      |
+| ------------------------- | -------------------------------------------- |
 | **`node:crypto` SHA-256** | As fast as native BLAKE3 here, no dependency |
-| `@napi-rs/blake-hash` | Equal speed, one more native dependency |
-| `blake3` (npm) | Does not install |
+| `@napi-rs/blake-hash`     | Equal speed, one more native dependency      |
+| `blake3` (npm)            | Does not install                             |
 
 ## 5. Recommendation
 

@@ -1,0 +1,33 @@
+export const MAX_WORDS = 60;
+export const DIGITS = /\d+(?:[.,]\d+)*/g;
+
+export const SYMBOL_FIXES: ReadonlyMap<string, string> = new Map([
+  ["%", 'write "percent"'],
+  ["µ", 'write "micro"'],
+  ["μ", 'write "micro"'],
+  ["°", 'write "degrees"'],
+  ["&", 'write "and"'],
+  ["+", 'write "plus"'],
+  ["=", 'write "equals"'],
+  ["×", 'write "times"'],
+  ["÷", 'write "divided by"'],
+  ["≈", 'write "about"'],
+  ["~", 'write "about"'],
+  ["±", 'write "plus or minus"'],
+  ["→", 'write "to"'],
+  ["/", 'write "per" or "or"'],
+  ["#", 'write "number"'],
+  ["@", 'write "at"'],
+  ["′", 'write "minutes" or "feet"'],
+  ["″", 'write "seconds" or "inches"'],
+  ["\u2014", "use a comma"],
+  ["\u2013", 'write "to"'],
+  ["<", 'write "less than"'],
+  [">", 'write "more than"'],
+  ["$", 'write "dollars"'],
+  ["€", 'write "euros"'],
+  ["£", 'write "pounds"'],
+  ["^", 'write "to the power of"'],
+  ["*", "remove it"],
+  ["_", "remove it"],
+]);

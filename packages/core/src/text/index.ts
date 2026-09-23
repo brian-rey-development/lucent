@@ -1,0 +1,10 @@
+export { closestMatch } from "./closest-match.ts";
+export { comparePositions } from "./compare-positions.ts";
+export { ELEMENT_SIGIL, ID_PATTERN, POINT_SEPARATOR } from "./constants.ts";
+export { countWords } from "./count-words.ts";
+export { isId } from "./is-id.ts";
+export { normalizePhrase } from "./normalize-phrase.ts";
+export { splitLines } from "./split-lines.ts";
+export { stripByteOrderMark } from "./strip-byte-order-mark.ts";
+export { toId } from "./to-id.ts";
+export type { Position, TextBlock } from "./types.ts";

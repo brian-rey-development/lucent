@@ -1,0 +1,33 @@
+name: Bug report
+description: Something does not work as documented.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Include the command and its full output.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Smallest file that reproduces it
+      render: markdown
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: The output of `lucent --version`, or the commit you built.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: OS and Node version

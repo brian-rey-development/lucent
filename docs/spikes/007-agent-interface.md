@@ -1,12 +1,12 @@
 # Spike 007: Agent interface and token budgets
 
-| | |
-|---|---|
-| Status | Complete |
-| Date | 2026-09-23 |
+|          |                                                                                                                             |
+| -------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Status   | Complete                                                                                                                    |
+| Date     | 2026-09-23                                                                                                                  |
 | Question | What agent interface keeps Lucent cheap in tokens and time, and how do we enforce the budgets in `docs/goals.md` section 4? |
-| Informs | ADR 0010 |
-| Machine | Apple M5 Pro, macOS (Darwin 25.4), Node 24.21, pnpm 9.15, uv 0.12.2 |
+| Informs  | ADR 0010                                                                                                                    |
+| Machine  | Apple M5 Pro, macOS (Darwin 25.4), Node 24.21, pnpm 9.15, uv 0.12.2                                                         |
 
 ## 1. Question and why it matters
 
@@ -68,23 +68,23 @@ Every number below is labelled **measured** (with the tokenizer) or **estimated*
 
 ### 3.2 Measured token costs (tiktoken o200k, proxy for Claude)
 
-| Artefact | Characters | o200k | cl100k | Status |
-|---|---|---|---|---|
-| Five tool definitions, as received from `tools/list` (with `annotations`, `execution`, `$schema`) | 2,216 | **514** | 490 | measured |
-| Same, reduced to what the Claude API receives (`name`, `description`, `input_schema`) | 1,877 | **437** | 422 | measured |
-| Same, without the SDK's `$schema` key | 1,617 | **365** | 347 | measured |
-| Per tool (API shape, with `$schema`): guide 69, catalog 58, check 92, snap 113, render 103 | | 435 total | | measured |
-| Tool descriptions alone: 18 to 22 tokens each | | | | measured |
-| Deferred names in Claude Code, `mcp__lucent__lucent_*` x5 | | **50** | | measured |
-| Deferred names if tools are named `check`, `snap`... (`mcp__lucent__check`) x5 | | **39** | | measured |
-| Catalog, one line per entry (17 components + header + state-change line) | 1,636 | **375** | 370 | measured |
-| Same 17 components as JSON Schema, minified | 9,327 | **2,480** | 2,388 | measured |
-| Same, pretty-printed | 17,326 | **4,199** | 4,189 | measured |
-| One entry's schema (`ring`), pretty-printed, against its catalog line (~30) | 1,296 | 387 | 385 | measured |
-| Sample guide (core topic, complete example, rules, loop, error format) | 2,660 | **758** | 762 | measured |
-| Sample SKILL.md (frontmatter + six steps) | 675 | **171** | 164 | measured |
-| Five check errors, text lines | 380 | **122** (19 to 30 each) | 122 | measured |
-| Three check errors as JSON with spans and fixes, plus a timeline entry | 719 | **227** | 224 | measured |
+| Artefact                                                                                          | Characters | o200k                   | cl100k | Status   |
+| ------------------------------------------------------------------------------------------------- | ---------- | ----------------------- | ------ | -------- |
+| Five tool definitions, as received from `tools/list` (with `annotations`, `execution`, `$schema`) | 2,216      | **514**                 | 490    | measured |
+| Same, reduced to what the Claude API receives (`name`, `description`, `input_schema`)             | 1,877      | **437**                 | 422    | measured |
+| Same, without the SDK's `$schema` key                                                             | 1,617      | **365**                 | 347    | measured |
+| Per tool (API shape, with `$schema`): guide 69, catalog 58, check 92, snap 113, render 103        |            | 435 total               |        | measured |
+| Tool descriptions alone: 18 to 22 tokens each                                                     |            |                         |        | measured |
+| Deferred names in Claude Code, `mcp__lucent__lucent_*` x5                                         |            | **50**                  |        | measured |
+| Deferred names if tools are named `check`, `snap`... (`mcp__lucent__check`) x5                    |            | **39**                  |        | measured |
+| Catalog, one line per entry (17 components + header + state-change line)                          | 1,636      | **375**                 | 370    | measured |
+| Same 17 components as JSON Schema, minified                                                       | 9,327      | **2,480**               | 2,388  | measured |
+| Same, pretty-printed                                                                              | 17,326     | **4,199**               | 4,189  | measured |
+| One entry's schema (`ring`), pretty-printed, against its catalog line (~30)                       | 1,296      | 387                     | 385    | measured |
+| Sample guide (core topic, complete example, rules, loop, error format)                            | 2,660      | **758**                 | 762    | measured |
+| Sample SKILL.md (frontmatter + six steps)                                                         | 675        | **171**                 | 164    | measured |
+| Five check errors, text lines                                                                     | 380        | **122** (19 to 30 each) | 122    | measured |
+| Three check errors as JSON with spans and fixes, plus a timeline entry                            | 719        | **227**                 | 224    | measured |
 
 Conclusions:
 
@@ -137,14 +137,14 @@ Conclusions:
   assets, render queue). The MCP server and the CLI are both thin clients that connect to it, or start it when absent.
   Pitfalls and their fixes:
 
-| Pitfall | Fix |
-|---|---|
-| macOS limits a unix socket path to 104 bytes. A socket inside a project with a long path overflows (the old Halden path with `.lucent/run/lucent.sock` is already 92 chars, measured) | Put sockets in the user cache dir, named by a short hash of the project root |
-| Stale socket after a crash | Lock file with pid and engine version; on connect failure check the pid, unlink, restart |
-| Two clients start the daemon at once | Exclusive create of the lock file (`O_EXCL`) or `flock`; the loser connects to the winner |
-| Engine upgraded while a daemon runs | Version handshake on connect; mismatch restarts the daemon |
-| Several agents render the same file | Render queue deduplicates by scene cache key; checks are read-only and never queue |
-| Forgotten daemons | Idle shutdown after 15 minutes without requests |
+| Pitfall                                                                                                                                                                               | Fix                                                                                       |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| macOS limits a unix socket path to 104 bytes. A socket inside a project with a long path overflows (the old Halden path with `.lucent/run/lucent.sock` is already 92 chars, measured) | Put sockets in the user cache dir, named by a short hash of the project root              |
+| Stale socket after a crash                                                                                                                                                            | Lock file with pid and engine version; on connect failure check the pid, unlink, restart  |
+| Two clients start the daemon at once                                                                                                                                                  | Exclusive create of the lock file (`O_EXCL`) or `flock`; the loser connects to the winner |
+| Engine upgraded while a daemon runs                                                                                                                                                   | Version handshake on connect; mismatch restarts the daemon                                |
+| Several agents render the same file                                                                                                                                                   | Render queue deduplicates by scene cache key; checks are read-only and never queue        |
+| Forgotten daemons                                                                                                                                                                     | Idle shutdown after 15 minutes without requests                                           |
 
 - Long renders: the spec's Tasks extension exists, but client support is not verified. Renders stay synchronous with
   progress notifications and a `scene` scope, which keeps typical calls to seconds.
@@ -190,13 +190,13 @@ JSON shape for `--json` (LSP-compatible, so an editor extension can reuse it):
   file to the edited file wins.
 - What goes where:
 
-| Place | Content | Budget |
-|---|---|---|
-| Skill `description` | When to use Lucent, one sentence | ~40 tokens, always loaded |
-| `SKILL.md` body | The six-step loop only (sample measured 171 tokens) | <= 300 tokens, stays loaded after use |
-| `lucent_guide` | The format itself | <= 1,200 tokens, read once |
-| `lucent_catalog` | Components and verbs | <= 1,500 tokens, read once |
-| AGENTS.md section | Two lines: "use the Lucent MCP tools; call `lucent_guide` first" | ~40 tokens |
+| Place               | Content                                                          | Budget                                |
+| ------------------- | ---------------------------------------------------------------- | ------------------------------------- |
+| Skill `description` | When to use Lucent, one sentence                                 | ~40 tokens, always loaded             |
+| `SKILL.md` body     | The six-step loop only (sample measured 171 tokens)              | <= 300 tokens, stays loaded after use |
+| `lucent_guide`      | The format itself                                                | <= 1,200 tokens, read once            |
+| `lucent_catalog`    | Components and verbs                                             | <= 1,500 tokens, read once            |
+| AGENTS.md section   | Two lines: "use the Lucent MCP tools; call `lucent_guide` first" | ~40 tokens                            |
 
 Nothing about the format is duplicated in the skill or AGENTS.md: they point to `guide`, so there is one source of
 truth and one budget.
@@ -218,13 +218,13 @@ truth and one budget.
 
 ## 4. Options compared
 
-| Option | Context cost | Reach | Images | Warm state | Verdict |
-|---|---|---|---|---|---|
-| CLI only | 0 until used | Shell agents only | Two calls (write PNG, read it) | Needs a daemon anyway | Good for people and CI, not enough alone |
-| MCP only | ~50 tokens in Claude Code, 365 to 437 elsewhere (measured) | Every MCP client | One call | Per-session process, duplicated per agent | Good for agents, awkward for people and CI |
-| **MCP + CLI over one core, daemon for heavy state** | Same as MCP | Everyone | One call | Shared across agents and the CLI | **Recommended** |
-| Guide and catalog as MCP resources | Lower in theory | Client support for model access unverified | n/a | n/a | Rejected: tools reach the model everywhere |
-| Full JSON Schema catalog | 2,480 to 4,199 tokens (measured) | n/a | n/a | n/a | Rejected: 6.6 to 11.2x the one-line catalog |
+| Option                                              | Context cost                                               | Reach                                      | Images                         | Warm state                                | Verdict                                     |
+| --------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------ | ------------------------------ | ----------------------------------------- | ------------------------------------------- |
+| CLI only                                            | 0 until used                                               | Shell agents only                          | Two calls (write PNG, read it) | Needs a daemon anyway                     | Good for people and CI, not enough alone    |
+| MCP only                                            | ~50 tokens in Claude Code, 365 to 437 elsewhere (measured) | Every MCP client                           | One call                       | Per-session process, duplicated per agent | Good for agents, awkward for people and CI  |
+| **MCP + CLI over one core, daemon for heavy state** | Same as MCP                                                | Everyone                                   | One call                       | Shared across agents and the CLI          | **Recommended**                             |
+| Guide and catalog as MCP resources                  | Lower in theory                                            | Client support for model access unverified | n/a                            | n/a                                       | Rejected: tools reach the model everywhere  |
+| Full JSON Schema catalog                            | 2,480 to 4,199 tokens (measured)                           | n/a                                        | n/a                            | n/a                                       | Rejected: 6.6 to 11.2x the one-line catalog |
 
 ## 5. Recommendation
 
@@ -242,17 +242,17 @@ Keep ADR 0010's shape (one core library, MCP server and CLI as thin adapters, fi
 5. **Contact sheet fixed at 1344 x 756**: 1,296 visual tokens on every model tier, 16 thumbnails.
 6. **Budgets and their enforcement** (update `docs/goals.md`):
 
-| Budget | Old | New | Measured sample |
-|---|---|---|---|
-| Guide | 2,000 | **1,200** | 758 |
-| Catalog | 1,500 | 1,500 | 375 for 17 entries |
-| All tool definitions | 600 | 600 | 365 |
-| Skill body | 300 | 300 | 171 |
-| One error line | 40 | 40 | 19 to 30 |
-| Image | "~1,500" | **1,296 exactly**, `ceil(w/28) x ceil(h/28)` | computed |
+| Budget               | Old      | New                                          | Measured sample    |
+| -------------------- | -------- | -------------------------------------------- | ------------------ |
+| Guide                | 2,000    | **1,200**                                    | 758                |
+| Catalog              | 1,500    | 1,500                                        | 375 for 17 entries |
+| All tool definitions | 600      | 600                                          | 365                |
+| Skill body           | 300      | 300                                          | 171                |
+| One error line       | 40       | 40                                           | 19 to 30           |
+| Image                | "~1,500" | **1,296 exactly**, `ceil(w/28) x ceil(h/28)` | computed           |
 
-   CI counts with `js-tiktoken` `o200k_base` and fails at budget / 1.35. An optional job calibrates against Claude's
-   `count_tokens` when a key is present.
+CI counts with `js-tiktoken` `o200k_base` and fails at budget / 1.35. An optional job calibrates against Claude's
+`count_tokens` when a key is present.
 
 Final tool definitions (API shape, as they should be emitted):
 
@@ -324,12 +324,12 @@ The measured 365 tokens were counted without the `fix` parameter; it adds an est
 Scratch directory (throwaway, not part of Lucent):
 the session scratchpad (`research/007`), outside the repository
 
-| File | What it is |
-|---|---|
-| `tools.mjs` | Registers the five tools with `McpServer` (SDK 1.30.0, zod 4.6.5), lists them through `Client` over `InMemoryTransport`, writes `tools.json` and the API-shape variants |
-| `gen.mjs` | 17 component schemas in zod; writes `catalog.schema.json` (pretty and minified) and `ring.schema.json` via `z.toJSONSchema` |
-| `catalog.txt`, `guide.md`, `skill.md`, `errors.txt`, `errors.json` | Hand-written samples in the proposed formats |
-| `startup.mjs` | Import timing for zod and the MCP SDK |
+| File                                                               | What it is                                                                                                                                                              |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tools.mjs`                                                        | Registers the five tools with `McpServer` (SDK 1.30.0, zod 4.6.5), lists them through `Client` over `InMemoryTransport`, writes `tools.json` and the API-shape variants |
+| `gen.mjs`                                                          | 17 component schemas in zod; writes `catalog.schema.json` (pretty and minified) and `ring.schema.json` via `z.toJSONSchema`                                             |
+| `catalog.txt`, `guide.md`, `skill.md`, `errors.txt`, `errors.json` | Hand-written samples in the proposed formats                                                                                                                            |
+| `startup.mjs`                                                      | Import timing for zod and the MCP SDK                                                                                                                                   |
 
 Counting: `uv run --with tiktoken python` with `o200k_base` and `cl100k_base`, on the exact file bytes.
 

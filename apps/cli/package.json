@@ -1,0 +1,20 @@
+{
+  "name": "@lucent/cli",
+  "version": "0.0.0",
+  "description": "The lucent command line",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "lucent": "./dist/main.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@lucent/core": "workspace:*"
+  }
+}
