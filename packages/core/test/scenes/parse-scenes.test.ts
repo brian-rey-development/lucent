@@ -121,7 +121,7 @@ describe("parseScenes", () => {
     ],
     [
       `## a\n\n> es: Hola.\n\nText.\n\n${BLOCK}`,
-      "E131 3:1 a translation without a paragraph; fix: put it right after its paragraph",
+      "E131 3:1 a translation without a paragraph; fix: put it after its paragraph",
     ],
     [
       `## a\n\nText.\n> a quote\n\n${BLOCK}`,
@@ -167,6 +167,20 @@ describe("parseScenes", () => {
       "One.",
       "Two.",
     ]);
+  });
+
+  it("attaches translations across blank lines and starts a new paragraph after one", () => {
+    const text = `## a\n\nOne.\n\n> es: Uno.\n\n> fr: Un.\nTwo.\n\nThree.\n\n${BLOCK}`;
+    const { narration } = scene(text);
+
+    expect(problems(text)).toEqual([]);
+    expect(
+      narration.map((item) =>
+        item.kind === "paragraph"
+          ? `${item.text} ${item.translations.map(({ language }) => language).join(",")}`
+          : item.kind,
+      ),
+    ).toEqual(["One. es,fr", "Two. ", "Three. "]);
   });
 
   it("uses the first non-blank column for indented lines", () => {

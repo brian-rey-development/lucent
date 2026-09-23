@@ -79,6 +79,7 @@ One line each: `CODE [file:]line:column where message; fix: ...`. Errors fail `c
   read, fits the 1,200-token guide budget, and a test keeps it there.
 - An inline ` #` comment is an error but no longer stops checking its block: only the value it cut goes unchecked.
 - `check` confirms every asset file in the manifest exists, inside the video's folder.
+- Lucent files survive Prettier: a blank line may separate a paragraph from its translations (ADR 0012).
 - `check` on the example takes about 1 ms in process and 70 ms as a cold CLI run, Node startup included. Adversarial
   inputs (long lines, deep nesting, thousands of cues, aliases, 1 MB files) stay under 0.5 s, and output is capped.
 - The CLI reads only regular UTF-8 files up to 1 MB, keeps the manifest inside the video's folder, escapes control

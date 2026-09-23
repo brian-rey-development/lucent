@@ -1,3 +1,4 @@
+import { format } from "prettier";
 import { describe, expect, it } from "vitest";
 
 import { check, selectScene } from "../../src/check/index.ts";
@@ -13,6 +14,16 @@ describe("check", () => {
       "blood 50.4",
       "molecule 45",
     ]);
+  });
+
+  it("checks translations with or without the blank line Prettier adds", async () => {
+    const compact = (await readExample()).replaceAll("\n\n> ", "\n> ");
+    const formatted = await format(compact, { parser: "markdown" });
+    const clean = { ok: true, warnings: 0 };
+
+    expect(formatted).toContain(".\n\n> es:");
+    expect(await check(compact, EXAMPLE_FILES)).toMatchObject(clean);
+    expect(await check(formatted, EXAMPLE_FILES)).toMatchObject(clean);
   });
 
   it("keeps checking a block after an inline comment, without errors for the value it cut", async () => {

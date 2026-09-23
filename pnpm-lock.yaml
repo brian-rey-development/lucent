@@ -48,6 +48,9 @@ importers:
       js-tiktoken:
         specifier: 1.0.21
         version: 1.0.21
+      prettier:
+        specifier: 3.9.9
+        version: 3.9.9
 
 packages:
 

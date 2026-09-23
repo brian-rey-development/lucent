@@ -45,7 +45,7 @@ export const UNCLOSED_COMMENT: Problem = {
 export const ORPHAN: Problem = {
   code: "E131",
   message: "translation without a paragraph",
-  fix: "put it right after its paragraph",
+  fix: "put it after its paragraph",
 };
 export const MALFORMED_TRANSLATION: Problem = {
   code: "E132",

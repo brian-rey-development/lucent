@@ -1,5 +1,3 @@
-# Lucent files: Prettier puts a blank line before blockquotes, which splits translations from their paragraph.
-**/*.lucent.md
 pnpm-lock.yaml
 coverage/
 prototypes/

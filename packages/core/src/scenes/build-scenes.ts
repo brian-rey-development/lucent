@@ -50,6 +50,7 @@ interface Draft {
   translations: Translation[];
   stray: boolean;
   ignoring: boolean;
+  gap: boolean;
 }
 
 export function buildScenes(tokens: readonly Token[]): Result<readonly SceneSource[]> {
@@ -76,12 +77,13 @@ function createDraft(): Draft {
     translations: [],
     stray: false,
     ignoring: false,
+    gap: false,
   };
 }
 
 function handle(draft: Draft, token: Token): void {
   if (token.kind === "blank") {
-    flush(draft);
+    draft.gap = true;
     draft.stray = false;
   } else if (token.kind === "heading") onHeading(draft, token);
   else if (token.kind === "fence") onFence(draft, token);
@@ -155,7 +157,7 @@ function onText(draft: Draft, { text, line, column }: TokenOf<"text">): void {
     draft.stray = true;
     return;
   }
-  if (draft.translations.length > 0) flush(draft);
+  if (draft.gap || draft.translations.length > 0) flush(draft);
   draft.lines.push({ text, line, column });
 }
 
@@ -201,7 +203,10 @@ function fenceProblem(token: FenceToken, scene: SceneDraft | undefined): Problem
   return scene.block === undefined ? undefined : SECOND_BLOCK;
 }
 
+// A blank line keeps the paragraph open for its translations: formatters such as Prettier put one
+// before every blockquote.
 function flush(draft: Draft): void {
+  draft.gap = false;
   const { scene } = draft;
   const [first, ...rest] = draft.lines;
   if (scene === undefined || first === undefined) return;

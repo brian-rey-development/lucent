@@ -23,6 +23,7 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
-    "js-tiktoken": "1.0.21"
+    "js-tiktoken": "1.0.21",
+    "prettier": "3.9.9"
   }
 }

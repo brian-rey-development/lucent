@@ -141,8 +141,8 @@ export const CASES: readonly Case[] = [
   {
     code: "E131",
     name: "orphan translation",
-    source: documentOf(sceneOf(STEPS, `${NARRATION}\n\n> es: huérfano`)),
-    at: [15, 1],
+    source: documentOf(sceneOf(STEPS, `> es: huérfano\n\n${NARRATION}`)),
+    at: [12, 1],
   },
   {
     code: "E132",

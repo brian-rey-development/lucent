@@ -42,7 +42,7 @@ do:
   `[a-z][a-z0-9_-]*`; scene ids are unique. Other headings are errors.
 - A paragraph is consecutive text lines, spoken as one clip.
 - `[phrase]` or `[phrase|id]` marks a cue, unique per scene.
-- `> es: text` right after a paragraph translates it.
+- `> es: text` after a paragraph translates it.
 - `(pause 1.5s)` adds silence, up to 60 s.
 - `<!-- comments -->` are ignored anywhere.
 - One ` ```scene ` block per scene.
