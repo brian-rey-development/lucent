@@ -1,0 +1,92 @@
+[
+  {
+    "key": "skin",
+    "title": "Normal Epidermis and Dermis with Intradermal Nevus 10x.JPG",
+    "caption": "Human skin · light microscope · H&E stain",
+    "license": "Public domain",
+    "artist": "Kilbad",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Normal_Epidermis_and_Dermis_with_Intradermal_Nevus_10x.JPG",
+    "path": "skin.jpg"
+  },
+  {
+    "key": "hela",
+    "title": "HeLa-I.jpg",
+    "caption": "Human cells in culture · DNA in cyan",
+    "license": "Public domain",
+    "artist": "National Institutes of Health (NIH)",
+    "page_url": "https://commons.wikimedia.org/wiki/File:HeLa-I.jpg",
+    "path": "hela.jpg"
+  },
+  {
+    "key": "blood",
+    "title": "WBC (neutrophil) at centre, numerous erythrocytes and platelets (dot like bodies) in Wright's stained peripheral blood smear (PBS) microscopy.jpg",
+    "caption": "Human blood smear · Wright's stain",
+    "license": "CC BY-SA 4.0",
+    "artist": "Ajay Kumar Chaurasiya",
+    "page_url": "https://commons.wikimedia.org/wiki/File:WBC_(neutrophil)_at_centre,_numerous_erythrocytes_and_platelets_(dot_like_bodies)_in_Wright%27s_stained_peripheral_blood_smear_(PBS)_microscopy.jpg",
+    "path": "blood.jpg"
+  },
+  {
+    "key": "mitosis",
+    "title": "Cell culture (HeLa cells) (261 16) Cell culture (HeLa cells) - metaphase, prophase.jpg",
+    "caption": "Human cells, some dividing · light microscope",
+    "license": "CC BY-SA 3.0",
+    "artist": "Doc. RNDr. Josef Reischig, CSc.",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Cell_culture_(HeLa_cells)_(261_16)_Cell_culture_(HeLa_cells)_-_metaphase,_prophase.jpg",
+    "path": "mitosis.jpg"
+  },
+  {
+    "key": "karyotype",
+    "title": "NHGRI human male karyotype.png",
+    "caption": "Human karyotype · 46 chromosomes",
+    "license": "Public domain",
+    "artist": "Courtesy: National Human Genome Research Institute",
+    "page_url": "https://commons.wikimedia.org/wiki/File:NHGRI_human_male_karyotype.png",
+    "path": "karyotype.png"
+  },
+  {
+    "key": "sequencer",
+    "title": "Illumina MiSeq sequencer.jpg",
+    "caption": "A DNA sequencer",
+    "license": "CC0",
+    "artist": "Konrad Förstner",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Illumina_MiSeq_sequencer.jpg",
+    "path": "sequencer.jpg"
+  },
+  {
+    "key": "pneumo",
+    "title": "Pneumococcus.jpg",
+    "caption": "Streptococcus pneumoniae · light microscope",
+    "license": "Public domain",
+    "artist": "unknown",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Pneumococcus.jpg",
+    "path": "pneumo.jpg"
+  },
+  {
+    "key": "avery",
+    "title": "Oswald T. Avery portrait 1937.jpg",
+    "caption": "Oswald Avery, Rockefeller Institute, 1937",
+    "license": "Public domain",
+    "artist": "Unknown authorUnknown author",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Oswald_T._Avery_portrait_1937.jpg",
+    "path": "avery.jpg"
+  },
+  {
+    "key": "phage",
+    "title": "Enterobacteria phage T2 transmission electron micrograph.jpg",
+    "caption": "Bacteriophage T2 · electron micrograph",
+    "license": "CC BY-SA 4.0",
+    "artist": "SnaxMikn",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Enterobacteria_phage_T2_transmission_electron_micrograph.jpg",
+    "path": "phage.jpg"
+  },
+  {
+    "key": "chargaff",
+    "title": "Chargaff results on salmon DNA.png",
+    "caption": "Chargaff's data: salmon sperm DNA",
+    "license": "Public domain",
+    "artist": "Erwin Chargaff et al.",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Chargaff_results_on_salmon_DNA.png",
+    "path": "chargaff.png"
+  }
+]

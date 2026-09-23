@@ -1,0 +1,30 @@
+# OS and editors
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.ruff_cache/
+
+# Lucent caches and outputs
+.lucent/
+*.mp4
+*.wav
+
+# Manim prototype: rendered media, voice cache and fetched images (licensed, re-fetchable)
+prototypes/manim/output/
+prototypes/manim/media/
+prototypes/manim/assets/images/
+
+# Secrets
+.env
+.env.*

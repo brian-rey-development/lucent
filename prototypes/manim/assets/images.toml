@@ -1,0 +1,43 @@
+# Real images used in the lessons. `halden-lesson fetch-assets` downloads them into
+# assets/images/ (gitignored), verifies each license against the allowlist in
+# halden_lessons.assets.commons, and regenerates assets/CREDITS.md.
+
+[skin]
+title = "Normal Epidermis and Dermis with Intradermal Nevus 10x.JPG"
+caption = "Human skin · light microscope · H&E stain"
+
+[hela]
+title = "HeLa-I.jpg"
+caption = "Human cells in culture · DNA in cyan"
+
+[blood]
+title = "WBC (neutrophil) at centre, numerous erythrocytes and platelets (dot like bodies) in Wright's stained peripheral blood smear (PBS) microscopy.jpg"
+caption = "Human blood smear · Wright's stain"
+
+[mitosis]
+title = "Cell culture (HeLa cells) (261 16) Cell culture (HeLa cells) - metaphase, prophase.jpg"
+caption = "Human cells, some dividing · light microscope"
+
+[karyotype]
+title = "NHGRI human male karyotype.png"
+caption = "Human karyotype · 46 chromosomes"
+
+[sequencer]
+title = "Illumina MiSeq sequencer.jpg"
+caption = "A DNA sequencer"
+
+[pneumo]
+title = "Pneumococcus.jpg"
+caption = "Streptococcus pneumoniae · light microscope"
+
+[avery]
+title = "Oswald T. Avery portrait 1937.jpg"
+caption = "Oswald Avery, Rockefeller Institute, 1937"
+
+[phage]
+title = "Enterobacteria phage T2 transmission electron micrograph.jpg"
+caption = "Bacteriophage T2 · electron micrograph"
+
+[chargaff]
+title = "Chargaff results on salmon DNA.png"
+caption = "Chargaff's data: salmon sperm DNA"

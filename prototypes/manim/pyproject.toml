@@ -1,0 +1,43 @@
+[project]
+name = "halden-lessons"
+version = "0.1.0"
+description = "Narrated, animated lessons on the biology and engineering behind Halden Genomics."
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "kokoro>=0.9.4",
+    "manim>=0.21.0",
+    "soundfile>=0.14.0",
+]
+
+[project.scripts]
+halden-lesson = "halden_lessons.render.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12,<0.13"]
+build-backend = "uv_build"
+
+[tool.ruff]
+extend = "../pyproject.toml"
+
+[tool.ruff.lint]
+# Scene layout is positional by nature: coordinates and timings are not magic numbers here.
+extend-ignore = [
+    "PLR2004",
+    "S311",  # seeded randomness drives visuals, never security
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["halden_lessons"]
+
+[tool.pyright]
+pythonVersion = "3.13"
+typeCheckingMode = "standard"
+include = ["src", "episodes"]
+venvPath = "."
+venv = ".venv"
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.414",
+    "ruff>=0.16.8",
+]
