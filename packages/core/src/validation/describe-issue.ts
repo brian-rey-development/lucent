@@ -9,8 +9,14 @@ import { invalidKey, invalidValue, missingKey, unknownKey } from "./problems.ts"
 import type { Issue } from "./types.ts";
 import { valueAt } from "./value-at.ts";
 
-export function describeIssue(issue: z.core.$ZodIssue, schema: z.ZodType, input: unknown): readonly Issue[] {
-  const path = issue.path.map((segment) => (typeof segment === "number" ? segment : String(segment)));
+export function describeIssue(
+  issue: z.core.$ZodIssue,
+  schema: z.ZodType,
+  input: unknown,
+): readonly Issue[] {
+  const path = issue.path.map((segment) =>
+    typeof segment === "number" ? segment : String(segment),
+  );
   if (issue.code === "unrecognized_keys") return unknownKeys(issue.keys, path, schema);
   if (issue.code === "invalid_key") return [keyIssue(issue, path)];
   const value = valueAt(input, path);
@@ -33,7 +39,10 @@ function unknownKeys(keys: readonly string[], path: YamlPath, schema: z.ZodType)
 function keyIssue(issue: z.core.$ZodIssueInvalidKey, path: YamlPath): Issue {
   const key = String(path.at(-1));
   const id = toId(key);
-  const fix = id === undefined ? `rename it to ${issue.issues[0]?.message ?? "a valid key"}` : `rename it to ${id}`;
+  const fix =
+    id === undefined
+      ? `rename it to ${issue.issues[0]?.message ?? "a valid key"}`
+      : `rename it to ${id}`;
   return { problem: invalidKey(key, fix), path, at: "key" };
 }
 

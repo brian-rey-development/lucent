@@ -1,8 +1,25 @@
-import { createDiagnostic, type Diagnostic, type Place, type Problem } from "../diagnostics/index.ts";
-import { paragraphsOf, WORDS_PER_SECOND, type Paragraph, type Translation, type Video } from "../model/index.ts";
+import {
+  createDiagnostic,
+  type Diagnostic,
+  type Place,
+  type Problem,
+} from "../diagnostics/index.ts";
+import {
+  paragraphsOf,
+  WORDS_PER_SECOND,
+  type Paragraph,
+  type Translation,
+  type Video,
+} from "../model/index.ts";
 import { countWords } from "../text/index.ts";
 import { MAX_CHARACTERS_PER_SECOND } from "./constants.ts";
-import { duplicateTranslation, missingTranslation, notInSubtitles, spokenLanguage, tooFast } from "./problems.ts";
+import {
+  duplicateTranslation,
+  missingTranslation,
+  notInSubtitles,
+  spokenLanguage,
+  tooFast,
+} from "./problems.ts";
 
 interface Languages {
   readonly spoken: string | undefined;
@@ -19,7 +36,11 @@ export function analyzeSubtitles({ settings, scenes }: Video): readonly Diagnost
   );
 }
 
-function analyzeParagraph(paragraph: Paragraph, languages: Languages, place: Place): readonly Diagnostic[] {
+function analyzeParagraph(
+  paragraph: Paragraph,
+  languages: Languages,
+  place: Place,
+): readonly Diagnostic[] {
   const { translations } = paragraph;
   const problems = translations.flatMap((translation, index) =>
     translationProblems(paragraph, translation, index, languages).map((problem) =>
@@ -27,15 +48,17 @@ function analyzeParagraph(paragraph: Paragraph, languages: Languages, place: Pla
     ),
   );
   if (translations.some(({ language }) => language === undefined)) return problems;
-  const missing = languages.translated.filter(
-    (language) => !translations.some((translation) => translation.language === language),
-  );
-  return [
-    ...problems,
-    ...missing.map((language) =>
-      createDiagnostic(missingTranslation(language), { ...place, position: paragraph.position }),
-    ),
-  ];
+  return [...problems, ...missingTranslations(paragraph, languages.translated, place)];
+}
+
+function missingTranslations(
+  { translations, position }: Paragraph,
+  languages: readonly string[],
+  place: Place,
+): readonly Diagnostic[] {
+  return languages
+    .filter((language) => !translations.some((translation) => translation.language === language))
+    .map((language) => createDiagnostic(missingTranslation(language), { ...place, position }));
 }
 
 function translationProblems(

@@ -15,7 +15,10 @@ describe("analyzeSpeech", () => {
     ["Eighty % of them.", 'E501 12:8 blood "%" cannot be spoken; fix: write "percent"'],
     ["Two µm wide.", 'E501 12:5 blood "µ" cannot be spoken; fix: write "micro"'],
     ["A \u2014 B.", 'E501 12:3 blood "\u2014" cannot be spoken; fix: use a comma'],
-    ["There are 46 of them.", "W502 12:11 blood digits 46 may be misread; fix: spell the number as spoken"],
+    [
+      "There are 46 of them.",
+      "W502 12:11 blood digits 46 may be misread; fix: spell the number as spoken",
+    ],
     ["Look at [cell 4] here.", ""],
   ])("checks %j", async (narration, expected) => {
     expect(await check(narration)).toEqual(expected === "" ? [] : [expected]);

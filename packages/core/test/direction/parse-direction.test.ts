@@ -45,11 +45,17 @@ describe("parseDirection", () => {
       },
       { kind: "change", verb: undefined, element: undefined, at: "with", children: [] },
     ]);
-    expect(parsed.steps?.[2]).toMatchObject({ target: "t", value: { text: "yo" }, position: { line: 10, column: 5 } });
+    expect(parsed.steps?.[2]).toMatchObject({
+      target: "t",
+      value: { text: "yo" },
+      position: { line: 10, column: 5 },
+    });
   });
 
   it("keeps modifiers out of props", () => {
-    expect(steps("do:\n  - at: x\n    id: t\n    dur: fast\n    text: hi")[0]).toMatchObject({ props: { text: "hi" } });
+    expect(steps("do:\n  - at: x\n    id: t\n    dur: fast\n    text: hi")[0]).toMatchObject({
+      props: { text: "hi" },
+    });
   });
 
   it.each([
@@ -160,15 +166,25 @@ describe("parseDirection", () => {
       { keep: undefined, steps: [expect.anything()] },
     ],
     ["do: []", "E105 2:5 s.do is an empty list; fix: add an item", { keep: [], steps: [] }],
-    ["do: {photo: blood}", "E105 2:5 s.do is a mapping; fix: write a list", { keep: [], steps: undefined }],
-    ["layout: grid\ndo: []", 'E105 2:9 s.layout is "grid"; fix: use stack|row|split', { keep: [], steps: [] }],
+    [
+      "do: {photo: blood}",
+      "E105 2:5 s.do is a mapping; fix: write a list",
+      { keep: [], steps: undefined },
+    ],
+    [
+      "layout: grid\ndo: []",
+      'E105 2:9 s.layout is "grid"; fix: use stack|row|split',
+      { keep: [], steps: [] },
+    ],
     ["do: [ ", "E102 2:7 s unclosed [; fix: add ]", undefined],
   ])("validates the block %j field by field", (text, expected, value) => {
     const parsed = parse(text);
 
     expect(parsed.diagnostics.map(summarize)).toEqual(expect.arrayContaining([expected]));
-    expect(parsed.value === undefined ? undefined : { keep: parsed.value.keep, steps: parsed.value.steps }).toEqual(
-      value,
-    );
+    expect(
+      parsed.value === undefined
+        ? undefined
+        : { keep: parsed.value.keep, steps: parsed.value.steps },
+    ).toEqual(value);
   });
 });

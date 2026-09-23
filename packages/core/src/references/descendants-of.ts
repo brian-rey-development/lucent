@@ -1,6 +1,9 @@
 import type { Element } from "./types.ts";
 
-export function descendantsOf(elements: ReadonlyMap<string, Element>, id: string): readonly string[] {
+export function descendantsOf(
+  elements: ReadonlyMap<string, Element>,
+  id: string,
+): readonly string[] {
   const children = Map.groupBy(elements.values(), ({ parent }) => parent);
   const found: string[] = [];
   const pending = [id];

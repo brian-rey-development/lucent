@@ -1,4 +1,11 @@
-import { HEADING_MARK, MAX_HEADING_LEVEL, PAUSE, PAUSE_LIKE, QUOTE_MARK, TRANSLATION } from "./constants.ts";
+import {
+  HEADING_MARK,
+  MAX_HEADING_LEVEL,
+  PAUSE,
+  PAUSE_LIKE,
+  QUOTE_MARK,
+  TRANSLATION,
+} from "./constants.ts";
 import type { Token } from "./types.ts";
 
 interface Heading {
@@ -23,12 +30,19 @@ function headingOf(trimmed: string): Heading | undefined {
   let level = 0;
   while (trimmed.charAt(level) === HEADING_MARK) level++;
   const rest = trimmed.slice(level);
-  if (level === 0 || level > MAX_HEADING_LEVEL || (rest !== "" && rest.trimStart() === rest)) return undefined;
+  if (level === 0 || level > MAX_HEADING_LEVEL || (rest !== "" && rest.trimStart() === rest))
+    return undefined;
   return { level, text: rest.trim() };
 }
 
 function quoteOf(trimmed: string, line: number, column: number): Token {
   const translation = TRANSLATION.exec(trimmed);
   if (translation === null) return { kind: "quote", line, column };
-  return { kind: "translation", language: translation[1] ?? "", text: translation[2] ?? "", line, column };
+  return {
+    kind: "translation",
+    language: translation[1] ?? "",
+    text: translation[2] ?? "",
+    line,
+    column,
+  };
 }

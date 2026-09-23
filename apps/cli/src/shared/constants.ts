@@ -12,6 +12,8 @@ export const MAX_FILE_BYTES = 1024 * 1024;
 
 export const NUL = 0;
 
+export const OUTSIDE_ROOT = "is outside the video folder";
+
 export const ERRNO_REASONS: Readonly<Record<string, string>> = {
   ENOENT: "no such file",
   ENOTDIR: "no such file",

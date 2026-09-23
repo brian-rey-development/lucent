@@ -3,7 +3,7 @@ import { createDiagnostic, type Place, type Result } from "../diagnostics/index.
 import type { Direction, KeptElement, Step } from "../model/index.ts";
 import type { TextBlock } from "../text/index.ts";
 import { isRecord, readYaml, validateValue } from "../validation/index.ts";
-import type { Locator } from "../yaml/index.ts";
+import type { Locator, ParsedYaml } from "../yaml/index.ts";
 import { parseStep } from "./parse-step.ts";
 import { BLOCK_IS_LIST, MISSING_DO } from "./problems.ts";
 import { blockSchema } from "./schema.ts";
@@ -12,9 +12,20 @@ export function parseDirection(block: TextBlock, scene: string): Result<Directio
   const place = { where: scene, scene };
   const read = readYaml(block, place);
   if (read.value === undefined) return { value: undefined, diagnostics: read.diagnostics };
-  const { value: raw, locate } = read.value;
+  const parsed = directionFrom(read.value, block, place);
+  return { value: parsed.value, diagnostics: [...read.diagnostics, ...parsed.diagnostics] };
+}
+
+function directionFrom(
+  { value: raw, locate }: ParsedYaml,
+  block: TextBlock,
+  place: Place,
+): Result<Direction | undefined> {
   if (raw === null) {
-    const diagnostic = createDiagnostic(MISSING_DO, { ...place, position: { line: block.firstLine - 1, column: 1 } });
+    const diagnostic = createDiagnostic(MISSING_DO, {
+      ...place,
+      position: { line: block.firstLine - 1, column: 1 },
+    });
     return { value: { keep: [], steps: [], locate }, diagnostics: [diagnostic] };
   }
   if (Array.isArray(raw)) {
@@ -32,12 +43,19 @@ function directionOf(raw: unknown, locate: Locator, place: Place): Result<Direct
   return { value: direction, diagnostics: [...diagnostics, ...steps.diagnostics] };
 }
 
-function parseSteps(steps: unknown, locate: Locator, place: Place): Result<readonly Step[] | undefined> {
+function parseSteps(
+  steps: unknown,
+  locate: Locator,
+  place: Place,
+): Result<readonly Step[] | undefined> {
   if (!Array.isArray(steps)) return { value: undefined, diagnostics: [] };
   const parsed = steps.map((raw: unknown, index) =>
     parseStep(raw, { locate, place, path: ["do", index], level: "top" }),
   );
-  return { value: parsed.map(({ value }) => value), diagnostics: parsed.flatMap(({ diagnostics }) => diagnostics) };
+  return {
+    value: parsed.map(({ value }) => value),
+    diagnostics: parsed.flatMap(({ diagnostics }) => diagnostics),
+  };
 }
 
 function keptElements(keep: unknown, locate: Locator): readonly KeptElement[] | undefined {

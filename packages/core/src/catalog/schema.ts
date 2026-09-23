@@ -5,11 +5,13 @@ import type { Modifier, ModifierLevel } from "./types.ts";
 
 const SIGIL = `\\${ELEMENT_SIGIL}`;
 
-export const TARGET = new RegExp(`^${SIGIL}(?<id>${ID_PATTERN})(?:${POINT_SEPARATOR}(?<point>${ID_PATTERN}))?$`);
+export const TARGET = new RegExp(
+  `^${SIGIL}(?<id>${ID_PATTERN})(?:${POINT_SEPARATOR}(?<point>${ID_PATTERN}))?$`,
+);
 
-export const idSchema = z
-  .string()
-  .regex(new RegExp(`^${ID_PATTERN}$`), { error: "lowercase letters, digits, - or _, starting with a letter" });
+export const idSchema = z.string().regex(new RegExp(`^${ID_PATTERN}$`), {
+  error: "lowercase letters, digits, - or _, starting with a letter",
+});
 export const colorNameSchema = z
   .string()
   .regex(/^[A-Za-z][A-Za-z0-9_-]*$/, { error: "letters, digits, - or _, starting with a letter" });
@@ -18,7 +20,9 @@ export const sizeSchema = z.enum(["s", "m", "l", "xl"]);
 export const durationSchema = z.enum(["fast", "base", "slow"]);
 export const entranceSchema = z.enum(["fade", "cut"]);
 export const layoutSchema = z.enum(["stack", "row", "split"]);
-export const elementSchema = z.string().regex(new RegExp(`^${SIGIL}${ID_PATTERN}$`), { error: "$ID" });
+export const elementSchema = z
+  .string()
+  .regex(new RegExp(`^${SIGIL}${ID_PATTERN}$`), { error: "$ID" });
 export const elementsSchema = z.union([elementSchema, z.array(elementSchema).min(1)], {
   error: "$ID or a list of them",
 });

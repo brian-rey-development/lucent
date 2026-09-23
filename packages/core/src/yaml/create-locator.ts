@@ -1,4 +1,13 @@
-import { isMap, isNode, isScalar, isSeq, type Document, type Node, type Pair, type YAMLMap } from "yaml";
+import {
+  isMap,
+  isNode,
+  isScalar,
+  isSeq,
+  type Document,
+  type Node,
+  type Pair,
+  type YAMLMap,
+} from "yaml";
 
 import type { Position } from "../text/index.ts";
 import type { Locator, YamlPath } from "./types.ts";
@@ -10,7 +19,10 @@ interface Found {
 
 type PairIndex = WeakMap<YAMLMap, ReadonlyMap<string, Pair>>;
 
-export function createLocator(document: Document.Parsed, toPosition: (offset: number) => Position): Locator {
+export function createLocator(
+  document: Document.Parsed,
+  toPosition: (offset: number) => Position,
+): Locator {
   const index: PairIndex = new WeakMap();
   return {
     value: (path) => toPosition(offsetOf(walk(document.contents, path, index).node)),
@@ -51,7 +63,9 @@ function pairsOf(map: YAMLMap, index: PairIndex): ReadonlyMap<string, Pair> {
   const cached = index.get(map);
   if (cached !== undefined) return cached;
   const pairs = new Map(
-    map.items.flatMap((pair) => (isScalar(pair.key) ? [[String(pair.key.value), pair] as const] : [])),
+    map.items.flatMap((pair) =>
+      isScalar(pair.key) ? [[String(pair.key.value), pair] as const] : [],
+    ),
   );
   index.set(map, pairs);
   return pairs;

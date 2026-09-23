@@ -7,8 +7,13 @@ import { NO_MANIFEST, unknownAsset, unknownColor } from "./problems.ts";
 import { targetProblem } from "./target-problem.ts";
 import type { Walk } from "./types.ts";
 
-export function findProblem(walk: Walk, reference: Reference, ownAsset: string | undefined): Problem | undefined {
-  if (reference.kind === "target" || reference.kind === "hide") return targetProblem(walk, reference.target);
+export function findProblem(
+  walk: Walk,
+  reference: Reference,
+  ownAsset: string | undefined,
+): Problem | undefined {
+  if (reference.kind === "target" || reference.kind === "hide")
+    return targetProblem(walk, reference.target);
   if (reference.kind === "asset") return assetProblem(walk.video, reference.name);
   if (reference.kind === "color") return colorProblem(walk.video, reference.name);
   return ownAsset === undefined ? undefined : pointProblem(walk.video, ownAsset, reference.name);
@@ -16,7 +21,8 @@ export function findProblem(walk: Walk, reference: Reference, ownAsset: string |
 
 function assetProblem({ assets }: Video, name: string): Problem | undefined {
   if (assets.status === "none") return NO_MANIFEST;
-  if (assets.status === "unavailable" || !assets.complete || assets.manifest.has(name)) return undefined;
+  if (assets.status === "unavailable" || !assets.complete || assets.manifest.has(name))
+    return undefined;
   return unknownAsset(name, closestMatch(name, assets.manifest.keys()));
 }
 

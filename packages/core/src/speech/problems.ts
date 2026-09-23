@@ -5,9 +5,17 @@ export function unspeakable(symbol: string, fix: string): Problem {
 }
 
 export function digits(number: string): Problem {
-  return { code: "W502", message: `digits ${number} may be misread`, fix: "spell the number as spoken" };
+  return {
+    code: "W502",
+    message: `digits ${number} may be misread`,
+    fix: "spell the number as spoken",
+  };
 }
 
 export function tooLong(words: number): Problem {
-  return { code: "W402", message: `${words} words in one paragraph`, fix: "split it into two paragraphs" };
+  return {
+    code: "W402",
+    message: `${words} words in one paragraph`,
+    fix: "split it into two paragraphs",
+  };
 }

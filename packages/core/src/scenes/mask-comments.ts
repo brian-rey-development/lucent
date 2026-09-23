@@ -32,5 +32,9 @@ function outsideComment(text: string, index: number): Step {
   const start = text.indexOf(COMMENT_START, index);
   if (start === -1) return { piece: text.slice(index), next: text.length, inside: false };
   const next = start + COMMENT_START.length;
-  return { piece: `${text.slice(index, start)}${" ".repeat(COMMENT_START.length)}`, next, inside: true };
+  return {
+    piece: `${text.slice(index, start)}${" ".repeat(COMMENT_START.length)}`,
+    next,
+    inside: true,
+  };
 }

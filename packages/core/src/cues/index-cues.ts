@@ -8,7 +8,9 @@ export function indexCues(cues: readonly Cue[], narration: string): CueIndex {
   return {
     byId: new Map(firsts.flatMap((cue) => (cue.id === undefined ? [] : [[cue.id, cue] as const]))),
     byPhrase: Map.groupBy(firsts, ({ phrase }) => normalizePhrase(phrase)),
-    suggestions: new Map(firsts.map((cue) => [cue.id ?? normalizePhrase(cue.phrase), cue] as const)),
+    suggestions: new Map(
+      firsts.map((cue) => [cue.id ?? normalizePhrase(cue.phrase), cue] as const),
+    ),
     duplicates: new Set(groups.flatMap(([, ...rest]) => rest)),
     narration: normalizePhrase(narration),
   };

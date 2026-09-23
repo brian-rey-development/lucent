@@ -1,6 +1,6 @@
 import { check, parseVideo, type Report } from "../../src/check/index.ts";
 import type { Diagnostic } from "../../src/diagnostics/index.ts";
-import type { ReadFile, Video } from "../../src/model/index.ts";
+import type { FileAccess, Video } from "../../src/model/index.ts";
 
 export const FRONTMATTER = [
   "---",
@@ -35,19 +35,26 @@ export function sceneOf(yaml = STEPS, narration = NARRATION, id = "blood"): stri
   return `## ${id}\n\n${narration}\n\n\`\`\`scene\n${yaml}\n\`\`\``;
 }
 
-export function readFileOf(files: Files): ReadFile {
-  return async (path) => {
-    const text = files[path];
-    return text === undefined ? { ok: false, reason: "no such file" } : { ok: true, text };
+const MISSING = { ok: false, reason: "no such file" } as const;
+
+export const DEFAULT_FILES: Files = { "images.yaml": MANIFEST, "blood.jpg": "" };
+
+export function filesOf(files: Files): FileAccess {
+  return {
+    readFile: async (path) => {
+      const text = files[path];
+      return text === undefined ? MISSING : { ok: true, text };
+    },
+    findFile: async (path) => (files[path] === undefined ? MISSING : { ok: true }),
   };
 }
 
-export async function checkSource(source: string, files: Files = { "images.yaml": MANIFEST }): Promise<Report> {
-  return check(source, { readFile: readFileOf(files) });
+export async function checkSource(source: string, files: Files = DEFAULT_FILES): Promise<Report> {
+  return check(source, filesOf(files));
 }
 
-export async function videoOf(source: string, files: Files = { "images.yaml": MANIFEST }): Promise<Video> {
-  return (await parseVideo(source, readFileOf(files))).value;
+export async function videoOf(source: string, files: Files = DEFAULT_FILES): Promise<Video> {
+  return (await parseVideo(source, filesOf(files))).value;
 }
 
 export async function analyzed(

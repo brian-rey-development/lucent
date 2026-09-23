@@ -7,6 +7,10 @@ export const number = defineVerb({
   name: "number",
   signature: "number N [fmt TEXT] [unit TEXT]",
   summary: "number that counts to its new value",
-  props: z.strictObject({ number: z.number(), fmt: textSchema.optional(), unit: textSchema.optional() }),
+  props: z.strictObject({
+    number: z.number(),
+    fmt: textSchema.optional(),
+    unit: textSchema.optional(),
+  }),
   change: z.strictObject({ number: z.number() }),
 });

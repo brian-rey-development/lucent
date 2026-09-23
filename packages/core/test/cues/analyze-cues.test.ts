@@ -10,14 +10,28 @@ const check = async (narration: string, ...ats: readonly string[]): Promise<read
 
 describe("analyzeCues", () => {
   it("resolves phrases, ids and with", async () => {
-    expect(await check("See the [Zoom in] and [the cell|cell].", "zoom-in", "cell", "with")).toEqual([]);
+    expect(
+      await check("See the [Zoom in] and [the cell|cell].", "zoom-in", "cell", "with"),
+    ).toEqual([]);
     expect(await check("[won’t find] it.", "won't find")).toEqual([]);
   });
 
   it.each([
-    [["See [blood]."], ["blod"], 'E204 17:9 blood.do[0].at cue "blod" is not marked; fix: use "blood"'],
-    [["See [blood|rbc]."], ["rbx"], 'E204 17:9 blood.do[0].at cue "rbx" is not marked; fix: use rbc'],
-    [["See blood here."], ["blood"], 'E204 17:9 blood.do[0].at cue "blood" is not marked; fix: mark it: [blood]'],
+    [
+      ["See [blood]."],
+      ["blod"],
+      'E204 17:9 blood.do[0].at cue "blod" is not marked; fix: use "blood"',
+    ],
+    [
+      ["See [blood|rbc]."],
+      ["rbx"],
+      'E204 17:9 blood.do[0].at cue "rbx" is not marked; fix: use rbc',
+    ],
+    [
+      ["See blood here."],
+      ["blood"],
+      'E204 17:9 blood.do[0].at cue "blood" is not marked; fix: mark it: [blood]',
+    ],
     [
       ["See [plasma]."],
       ["something else"],
@@ -49,7 +63,11 @@ describe("analyzeCues", () => {
       'E137 12:17 blood duplicate cue "blood"; fix: give one an id: [PHRASE|ID]',
     ],
     [["See [a|x] and [b|x]."], ["x"], "E137 12:15 blood duplicate cue id x; fix: rename one"],
-    [["See [4 cells]."], ["4 cells"], 'E205 12:5 blood cue "4 cells" has digits; fix: spell the number as spoken'],
+    [
+      ["See [4 cells]."],
+      ["4 cells"],
+      'E205 12:5 blood cue "4 cells" has digits; fix: spell the number as spoken',
+    ],
   ])("reports %j with at %j", async ([narration = ""], ats, expected) => {
     expect(await check(`${narration}\n> es: x`, ...ats)).toEqual([expected]);
   });

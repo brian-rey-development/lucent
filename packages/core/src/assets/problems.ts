@@ -7,3 +7,11 @@ export function unreadable(path: string, reason: string): Problem {
     fix: "check the path; it is relative to the video file",
   };
 }
+
+export function missingFile(path: string, reason: string): Problem {
+  return {
+    code: "E142",
+    message: `cannot find ${path}: ${reason}`,
+    fix: "check the path; it is relative to the manifest",
+  };
+}

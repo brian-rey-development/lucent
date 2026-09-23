@@ -7,9 +7,14 @@ interface Value {
   readonly path: YamlPath;
 }
 
-export function referencesOf(verb: VerbDefinition, props: Readonly<Record<string, unknown>>): readonly Reference[] {
+export function referencesOf(
+  verb: VerbDefinition,
+  props: Readonly<Record<string, unknown>>,
+): readonly Reference[] {
   return Object.entries(verb.references).flatMap(([key, kind]) =>
-    kind === undefined ? [] : valuesOf(props[key], key).flatMap((value) => toReference(kind, value)),
+    kind === undefined
+      ? []
+      : valuesOf(props[key], key).flatMap((value) => toReference(kind, value)),
   );
 }
 

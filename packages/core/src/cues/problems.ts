@@ -8,12 +8,21 @@ export const NO_PREVIOUS: Problem = {
 };
 
 export function duplicateCue({ phrase, id }: Cue): Problem {
-  if (id !== undefined) return { code: "E137", message: `duplicate cue id ${id}`, fix: "rename one" };
-  return { code: "E137", message: `duplicate cue ${quote(phrase)}`, fix: "give one an id: [PHRASE|ID]" };
+  if (id !== undefined)
+    return { code: "E137", message: `duplicate cue id ${id}`, fix: "rename one" };
+  return {
+    code: "E137",
+    message: `duplicate cue ${quote(phrase)}`,
+    fix: "give one an id: [PHRASE|ID]",
+  };
 }
 
 export function cueWithDigits({ phrase }: Cue): Problem {
-  return { code: "E205", message: `cue ${quote(phrase)} has digits`, fix: "spell the number as spoken" };
+  return {
+    code: "E205",
+    message: `cue ${quote(phrase)} has digits`,
+    fix: "spell the number as spoken",
+  };
 }
 
 export function unusedCue({ phrase, id }: Cue): Problem {

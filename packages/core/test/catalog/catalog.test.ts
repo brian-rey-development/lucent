@@ -48,7 +48,9 @@ describe("formatCatalog", () => {
 
     expect(lines[0]).toMatch(/^Notation:/);
     expect(lines.filter((line) => line.startsWith("$ID"))).toHaveLength(1);
-    expect(VERBS.every(({ signature }) => lines.some((line) => line.startsWith(signature)))).toBe(true);
+    expect(VERBS.every(({ signature }) => lines.some((line) => line.startsWith(signature)))).toBe(
+      true,
+    );
   });
 });
 
@@ -65,7 +67,11 @@ describe("verbJsonSchema", () => {
   it("describes the step with its modifiers", () => {
     const schema = verbJsonSchema(verb("hide"));
 
-    expect(schema).toMatchObject({ type: "object", required: ["hide"], additionalProperties: false });
+    expect(schema).toMatchObject({
+      type: "object",
+      required: ["hide"],
+      additionalProperties: false,
+    });
     expect(Object.keys(schema["properties"] ?? {})).toEqual(["hide", "at", "dur"]);
   });
 });

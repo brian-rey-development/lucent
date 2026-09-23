@@ -29,7 +29,10 @@ afterAll(async () => {
 describe("readTextFile", () => {
   it("reads UTF-8 text", async () => {
     expect(await readTextFile(at("video", "ok.md"))).toEqual({ ok: true, text: "café" });
-    expect(await readTextFile(at("video", "ok.md"), at("video"))).toEqual({ ok: true, text: "café" });
+    expect(await readTextFile(at("video", "ok.md"), at("video"))).toEqual({
+      ok: true,
+      text: "café",
+    });
   });
 
   it.each([

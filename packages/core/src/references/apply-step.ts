@@ -1,7 +1,17 @@
 import type { z } from "zod";
 
-import { CHANGEABLE_VERBS, referencesOf, type Target, type VerbDefinition } from "../catalog/index.ts";
-import { createDiagnostic, formatWhere, type Diagnostic, type Problem } from "../diagnostics/index.ts";
+import {
+  CHANGEABLE_VERBS,
+  referencesOf,
+  type Target,
+  type VerbDefinition,
+} from "../catalog/index.ts";
+import {
+  createDiagnostic,
+  formatWhere,
+  type Diagnostic,
+  type Problem,
+} from "../diagnostics/index.ts";
 import type { ChangeStep, Step, UnparsedStep, VerbStep } from "../model/index.ts";
 import { ELEMENT_SIGIL, type Position } from "../text/index.ts";
 import { describeValue, isRecord, validateValue } from "../validation/index.ts";
@@ -13,7 +23,11 @@ import { removeElements } from "./remove-elements.ts";
 import { targetProblem } from "./target-problem.ts";
 import type { Walk } from "./types.ts";
 
-export function applyStep(walk: Walk, step: Step, parent: string | undefined): readonly Diagnostic[] {
+export function applyStep(
+  walk: Walk,
+  step: Step,
+  parent: string | undefined,
+): readonly Diagnostic[] {
   if (step.kind === "change") return applyChange(walk, step);
   const references = step.kind === "verb" ? checkReferences(walk, step) : [];
   if (step.verb?.clearsScreen === true && step.children.length > 0) {
@@ -35,7 +49,8 @@ function checkReferences(walk: Walk, step: VerbStep): readonly Diagnostic[] {
   for (const reference of referencesOf(step.verb, step.props)) {
     const problem = findProblem(walk, reference, step.element?.asset);
     const path = [...step.path, ...reference.path];
-    if (problem !== undefined) diagnostics.push(report(walk, problem, path, walk.locate.value(path)));
+    if (problem !== undefined)
+      diagnostics.push(report(walk, problem, path, walk.locate.value(path)));
     else if (reference.kind === "hide") hide(walk, reference.target, step);
   }
   return diagnostics;
@@ -46,7 +61,11 @@ function hide(walk: Walk, target: Target, step: VerbStep): void {
   removeElements(walk.screen, ids, `was hidden at ${whereOf(walk, step.path)}`);
 }
 
-function placeElement(walk: Walk, step: VerbStep | UnparsedStep, parent: string | undefined): readonly Diagnostic[] {
+function placeElement(
+  walk: Walk,
+  step: VerbStep | UnparsedStep,
+  parent: string | undefined,
+): readonly Diagnostic[] {
   if (step.element === "unknown") walk.screen.partial = true;
   if (step.element === undefined || step.element === "unknown") return [];
   const { id, verb, asset, explicit } = step.element;
@@ -69,9 +88,14 @@ function applyChange(walk: Walk, step: ChangeStep): readonly Diagnostic[] {
   const verb = walk.screen.elements.get(step.target)?.verb;
   if (verb === undefined) return [];
   const { change } = verb;
-  if (change === undefined) return [report(walk, noState(verb.name, CHANGEABLE_VERBS), path, step.position)];
+  if (change === undefined)
+    return [report(walk, noState(verb.name, CHANGEABLE_VERBS), path, step.position)];
   if (!isRecord(step.value)) {
-    const problem = changeNotMapping(step.target, describeValue(step.value), Object.keys(change.shape));
+    const problem = changeNotMapping(
+      step.target,
+      describeValue(step.value),
+      Object.keys(change.shape),
+    );
     return [report(walk, problem, path, step.position)];
   }
   return validateChange(walk, verb, change, step.value, path);
@@ -90,7 +114,9 @@ function validateChange(
   return referencesOf(verb, validated.value).flatMap((reference) => {
     const problem = findProblem(walk, reference, undefined);
     const referencePath = [...path, ...reference.path];
-    return problem === undefined ? [] : [report(walk, problem, referencePath, walk.locate.value(referencePath))];
+    return problem === undefined
+      ? []
+      : [report(walk, problem, referencePath, walk.locate.value(referencePath))];
   });
 }
 

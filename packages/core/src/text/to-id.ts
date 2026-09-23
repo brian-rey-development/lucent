@@ -1,4 +1,10 @@
-import { COMBINING_MARKS, DASH, LEADING_NON_LETTERS, NON_ID_CHARACTERS, REPEATED_DASHES } from "./constants.ts";
+import {
+  COMBINING_MARKS,
+  DASH,
+  LEADING_NON_LETTERS,
+  NON_ID_CHARACTERS,
+  REPEATED_DASHES,
+} from "./constants.ts";
 
 export function toId(text: string): string | undefined {
   const id = text

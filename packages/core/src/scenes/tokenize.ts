@@ -52,12 +52,20 @@ function openFence(text: string, line: number): OpenFence | undefined {
   while (trimmed.charAt(length) === character) length++;
   if (length < MIN_FENCE_LENGTH) return undefined;
   const [language = ""] = trimmed.slice(length).trim().split(WHITESPACE);
-  return { marker: trimmed.slice(0, length), language, line, column: text.length - trimmed.length + 1, body: [] };
+  return {
+    marker: trimmed.slice(0, length),
+    language,
+    line,
+    column: text.length - trimmed.length + 1,
+    body: [],
+  };
 }
 
 function readFenceLine(scan: Scan, fence: OpenFence, text: string): void {
   const trimmed = text.trim();
-  const closes = trimmed.length >= fence.marker.length && trimmed === fence.marker.charAt(0).repeat(trimmed.length);
+  const closes =
+    trimmed.length >= fence.marker.length &&
+    trimmed === fence.marker.charAt(0).repeat(trimmed.length);
   if (!closes) {
     fence.body.push(text);
     return;
@@ -66,7 +74,10 @@ function readFenceLine(scan: Scan, fence: OpenFence, text: string): void {
   scan.fence = undefined;
 }
 
-function fenceToken({ marker, language, line, column, body }: OpenFence, closed: boolean): FenceToken {
+function fenceToken(
+  { marker, language, line, column, body }: OpenFence,
+  closed: boolean,
+): FenceToken {
   return {
     kind: "fence",
     marker,

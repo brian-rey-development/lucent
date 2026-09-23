@@ -3,7 +3,9 @@ import type { z } from "zod";
 import { modifierShape } from "./modifier-shape.ts";
 import type { VerbDefinition, VerbInput } from "./types.ts";
 
-export function defineVerb<Shape extends z.core.$ZodShape>(input: VerbInput<Shape>): VerbDefinition {
+export function defineVerb<Shape extends z.core.$ZodShape>(
+  input: VerbInput<Shape>,
+): VerbDefinition {
   const element = input.element ?? "named";
   return {
     name: input.name,

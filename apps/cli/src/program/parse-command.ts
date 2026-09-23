@@ -26,7 +26,8 @@ function parseCatalog(args: readonly string[]): Command {
   if (values.help) return { name: "help", topic: "catalog" };
   const [verb, ...extra] = positionals;
   if (extra.length > 0) throw new UsageError("catalog takes one verb");
-  if (values.codes && (verb !== undefined || values.schema)) throw new UsageError("--codes takes no verb or --schema");
+  if (values.codes && (verb !== undefined || values.schema))
+    throw new UsageError("--codes takes no verb or --schema");
   if (values.schema && verb === undefined) throw new UsageError("--schema needs a verb");
   return { name: "catalog", verb, schema: values.schema, codes: values.codes };
 }

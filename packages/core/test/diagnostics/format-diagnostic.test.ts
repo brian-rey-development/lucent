@@ -6,15 +6,22 @@ const problem = { code: "E204", message: 'cue "x" is not marked', fix: "mark it:
 
 describe("formatDiagnostic", () => {
   it("prints one line, with the file only when it is set", () => {
-    const main = createDiagnostic(problem, { where: "blood.do[0].at", position: { line: 3, column: 9 } });
+    const main = createDiagnostic(problem, {
+      where: "blood.do[0].at",
+      position: { line: 3, column: 9 },
+    });
     const manifest = createDiagnostic(problem, {
       where: "manifest",
       file: "images.yaml",
       position: { line: 1, column: 1 },
     });
 
-    expect(formatDiagnostic(main)).toBe('E204 3:9 blood.do[0].at cue "x" is not marked; fix: mark it: [x]');
-    expect(formatDiagnostic(manifest)).toBe('E204 images.yaml:1:1 manifest cue "x" is not marked; fix: mark it: [x]');
+    expect(formatDiagnostic(main)).toBe(
+      'E204 3:9 blood.do[0].at cue "x" is not marked; fix: mark it: [x]',
+    );
+    expect(formatDiagnostic(manifest)).toBe(
+      'E204 images.yaml:1:1 manifest cue "x" is not marked; fix: mark it: [x]',
+    );
   });
 
   it("escapes control characters so a line cannot be forged or colored", () => {

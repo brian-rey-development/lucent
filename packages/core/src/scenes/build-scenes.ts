@@ -1,4 +1,9 @@
-import { createDiagnostic, type Diagnostic, type Problem, type Result } from "../diagnostics/index.ts";
+import {
+  createDiagnostic,
+  type Diagnostic,
+  type Problem,
+  type Result,
+} from "../diagnostics/index.ts";
 import type { NarrationItem, Translation } from "../model/index.ts";
 import { isId, type Position, type TextBlock } from "../text/index.ts";
 import { DOCUMENT, MAX_PAUSE_SECONDS, SCENE_FENCE, SCENE_LEVEL } from "./constants.ts";
@@ -48,7 +53,21 @@ interface Draft {
 }
 
 export function buildScenes(tokens: readonly Token[]): Result<readonly SceneSource[]> {
-  const draft: Draft = {
+  const draft = createDraft();
+  for (const token of tokens) handle(draft, token);
+  flush(draft);
+  for (const scene of draft.scenes) checkScene(draft, scene);
+  const scenes = draft.scenes.map(({ id, position, narration, block }) => ({
+    id,
+    position,
+    narration,
+    block,
+  }));
+  return { value: scenes, diagnostics: draft.diagnostics };
+}
+
+function createDraft(): Draft {
+  return {
     scenes: [],
     ids: new Set(),
     diagnostics: [],
@@ -58,11 +77,6 @@ export function buildScenes(tokens: readonly Token[]): Result<readonly SceneSour
     stray: false,
     ignoring: false,
   };
-  for (const token of tokens) handle(draft, token);
-  flush(draft);
-  for (const scene of draft.scenes) checkScene(draft, scene);
-  const scenes = draft.scenes.map(({ id, position, narration, block }) => ({ id, position, narration, block }));
-  return { value: scenes, diagnostics: draft.diagnostics };
 }
 
 function handle(draft: Draft, token: Token): void {
@@ -102,19 +116,37 @@ function onHeading(draft: Draft, { level, text, line, column }: TokenOf<"heading
     openScene(draft, text, position);
     return;
   }
-  report(draft, level === SCENE_LEVEL ? EMPTY_ID : notSceneHeading(level, text), position, undefined);
+  report(
+    draft,
+    level === SCENE_LEVEL ? EMPTY_ID : notSceneHeading(level, text),
+    position,
+    undefined,
+  );
   draft.scene = undefined;
   draft.ignoring = true;
 }
 
 function openScene(draft: Draft, id: string, position: Position): void {
-  const problem = isId(id) ? (draft.ids.has(id) ? duplicateScene(id) : undefined) : invalidSceneId(id);
-  const scene = { id, position, narration: [], block: undefined, fenced: false, truncated: false, paragraphs: 0 };
+  const problem = sceneIdProblem(draft.ids, id);
+  const scene = {
+    id,
+    position,
+    narration: [],
+    block: undefined,
+    fenced: false,
+    truncated: false,
+    paragraphs: 0,
+  };
   draft.scenes.push(scene);
   draft.ids.add(id);
   draft.scene = scene;
   draft.ignoring = false;
   if (problem !== undefined) report(draft, problem, position);
+}
+
+function sceneIdProblem(ids: ReadonlySet<string>, id: string): Problem | undefined {
+  if (!isId(id)) return invalidSceneId(id);
+  return ids.has(id) ? duplicateScene(id) : undefined;
 }
 
 function onText(draft: Draft, { text, line, column }: TokenOf<"text">): void {
@@ -139,14 +171,16 @@ function onTranslation(draft: Draft, token: TokenOf<"translation">): void {
 
 function addTranslation(draft: Draft, problem: Problem, { line, column }: Position): void {
   report(draft, problem, { line, column });
-  if (draft.lines.length > 0) draft.translations.push({ language: undefined, text: "", position: { line, column } });
+  if (draft.lines.length > 0)
+    draft.translations.push({ language: undefined, text: "", position: { line, column } });
 }
 
 function onPause(draft: Draft, { seconds, line, column }: TokenOf<"pause">): void {
   flush(draft);
   const position = { line, column };
   if (draft.scene === undefined) report(draft, STRAY, position);
-  else if (seconds <= 0 || seconds > MAX_PAUSE_SECONDS) report(draft, pauseOutOfRange(seconds), position);
+  else if (seconds <= 0 || seconds > MAX_PAUSE_SECONDS)
+    report(draft, pauseOutOfRange(seconds), position);
   else draft.scene.narration.push({ kind: "pause", seconds, position });
 }
 
@@ -190,6 +224,13 @@ function checkScene(draft: Draft, scene: SceneDraft): void {
   if (scene.narration.length === 0) report(draft, SILENT, scene.position, scene.id);
 }
 
-function report(draft: Draft, problem: Problem, { line, column }: Position, scene = draft.scene?.id): void {
-  draft.diagnostics.push(createDiagnostic(problem, { where: scene ?? DOCUMENT, scene, position: { line, column } }));
+function report(
+  draft: Draft,
+  problem: Problem,
+  { line, column }: Position,
+  scene = draft.scene?.id,
+): void {
+  draft.diagnostics.push(
+    createDiagnostic(problem, { where: scene ?? DOCUMENT, scene, position: { line, column } }),
+  );
 }

@@ -1,7 +1,11 @@
 import type { Problem } from "../diagnostics/index.ts";
 import { toId } from "../text/index.ts";
 
-export const NO_VERB: Problem = { code: "E112", message: "step has no verb", fix: "add one verb from lucent catalog" };
+export const NO_VERB: Problem = {
+  code: "E112",
+  message: "step has no verb",
+  fix: "add one verb from lucent catalog",
+};
 export const NESTED_CHANGE: Problem = {
   code: "E113",
   message: "state change inside a nested step",
@@ -23,7 +27,11 @@ export function unknownVerb(key: string, verb: string): Problem {
 }
 
 export function twoVerbs(keys: readonly string[]): Problem {
-  return { code: "E111", message: `two verbs: ${keys.join(", ")}`, fix: "split it into one step per verb" };
+  return {
+    code: "E111",
+    message: `two verbs: ${keys.join(", ")}`,
+    fix: "split it into one step per verb",
+  };
 }
 
 export function misplacedModifier(key: string, context: string): Problem {

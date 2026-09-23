@@ -19,7 +19,10 @@ describe("readYaml", () => {
     ["note: Source: x", 'E102 1:7 front ": " inside a value; fix: quote the value'],
     ["a: [1, 2", "E102 1:9 front unclosed [; fix: add ]"],
     ["a: {b: 1", "E102 1:9 front unclosed {; fix: add }"],
-    ["do:\n  - a: 1\n   b: 2", "E102 3:1 front list item without -; fix: add - or indent it under the item above"],
+    [
+      "do:\n  - a: 1\n   b: 2",
+      "E102 3:1 front list item without -; fix: add - or indent it under the item above",
+    ],
     ["a:\n\t- b", "E102 2:1 front tab used for indentation; fix: indent with spaces"],
     ['a: "\\q"', "E102 1:5 front bad escape in double quotes; fix: use single quotes"],
     ["a: b\n  c: d", 'E102 1:4 front ": " inside a value; fix: quote the value'],
@@ -29,6 +32,8 @@ describe("readYaml", () => {
   });
 
   it("returns the parsed YAML when valid", () => {
-    expect(readYaml({ text: "a: b", firstLine: 1 }, { where: "front" }).value?.value).toEqual({ a: "b" });
+    expect(readYaml({ text: "a: b", firstLine: 1 }, { where: "front" }).value?.value).toEqual({
+      a: "b",
+    });
   });
 });

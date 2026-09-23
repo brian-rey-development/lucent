@@ -34,5 +34,5 @@ export type YamlError = (Omit<TokenError, "offset"> | Omit<YamlSyntaxError, "off
 };
 
 export type YamlParse =
-  | { readonly kind: "parsed"; readonly yaml: ParsedYaml }
+  | { readonly kind: "parsed"; readonly yaml: ParsedYaml; readonly errors: readonly YamlError[] }
   | { readonly kind: "invalid"; readonly errors: readonly YamlError[] };

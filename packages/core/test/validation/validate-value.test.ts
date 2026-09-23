@@ -18,7 +18,9 @@ const schema = z.strictObject({
   items: z.array(z.string()).min(1).optional(),
   name: z.string().max(3).optional(),
   tags: z.array(z.string()).max(1).optional(),
-  colors: z.record(z.string().regex(/^[a-z]+$/, { error: "lowercase letters" }), z.string()).optional(),
+  colors: z
+    .record(z.string().regex(/^[a-z]+$/, { error: "lowercase letters" }), z.string())
+    .optional(),
   point: z.tuple([z.number(), z.number()]).optional(),
   either: z.union([z.string(), z.number()]).optional(),
   bar: z.strictObject({ share: z.number(), label: z.string() }).optional(),
@@ -30,7 +32,11 @@ function check(text: string): readonly string[] {
   const parsed = parseYaml({ text, firstLine: 1 });
   if (parsed.kind !== "parsed") throw new Error("expected parsed YAML");
   const { locate, value } = parsed.yaml;
-  return validateValue(schema, value, { locate, path: [], place: { where: "front" } }).diagnostics.map(summarize);
+  return validateValue(schema, value, {
+    locate,
+    path: [],
+    place: { where: "front" },
+  }).diagnostics.map(summarize);
 }
 
 describe("validateValue", () => {
@@ -62,14 +68,29 @@ describe("validateValue", () => {
     ["title: T\nitems: {a: 1}", "E105 2:8 front.items is a mapping; fix: write a list"],
     ["title: T\nname: long", 'E105 2:7 front.name is "long"; fix: use at most 3 characters'],
     ["title: T\ntags: [a, b]", "E105 2:7 front.tags is a list; fix: use at most 1 items"],
-    ["title: T\ncolors: { Bad: x }", "E105 2:11 front.colors key Bad is invalid; fix: rename it to bad"],
-    ["title: T\ncolors: { 123: x }", "E105 2:11 front.colors key 123 is invalid; fix: rename it to lowercase letters"],
+    [
+      "title: T\ncolors: { Bad: x }",
+      "E105 2:11 front.colors key Bad is invalid; fix: rename it to bad",
+    ],
+    [
+      "title: T\ncolors: { 123: x }",
+      "E105 2:11 front.colors key 123 is invalid; fix: rename it to lowercase letters",
+    ],
     ["title: T\npoint: [1]", "E105 2:8 front.point is a list; fix: use at least 2 items"],
     ["title: T\neither: [1]", "E105 2:9 front.either is a list; fix: fix the value"],
     ["- a", "E105 1:1 front is a list; fix: write a mapping"],
-    ["title: T\nbar: { share: 1, label: x, lable: y }", "E104 2:28 front.bar unknown key lable; fix: use label"],
-    ["title: T\nevents:\n  - at: x\n    txt: y", "E104 4:5 front.events[0] unknown key txt; fix: use text"],
-    ["title: T\nassets:\n  blood:\n    fil: b.jpg", "E104 4:5 front.assets.blood unknown key fil; fix: use file"],
+    [
+      "title: T\nbar: { share: 1, label: x, lable: y }",
+      "E104 2:28 front.bar unknown key lable; fix: use label",
+    ],
+    [
+      "title: T\nevents:\n  - at: x\n    txt: y",
+      "E104 4:5 front.events[0] unknown key txt; fix: use text",
+    ],
+    [
+      "title: T\nassets:\n  blood:\n    fil: b.jpg",
+      "E104 4:5 front.assets.blood unknown key fil; fix: use file",
+    ],
   ])("describes %j", (text, expected) => {
     expect(check(text)).toEqual([expected]);
   });

@@ -7,6 +7,13 @@ export { isModifier } from "./is-modifier.ts";
 export { modifierShape } from "./modifier-shape.ts";
 export { parseTarget } from "./parse-target.ts";
 export { referencesOf } from "./references-of.ts";
-export { colorNameSchema, elementsSchema, entranceSchema, idSchema, layoutSchema, textSchema } from "./schema.ts";
+export {
+  colorNameSchema,
+  elementsSchema,
+  entranceSchema,
+  idSchema,
+  layoutSchema,
+  textSchema,
+} from "./schema.ts";
 export type { Reference, StepLevel, Target, VerbDefinition } from "./types.ts";
 export { verbJsonSchema } from "./verb-json-schema.ts";

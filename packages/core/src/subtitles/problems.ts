@@ -18,7 +18,11 @@ export function duplicateTranslation(language: string): Problem {
 }
 
 export function missingTranslation(language: string): Problem {
-  return { code: "E134", message: `missing ${language} translation`, fix: `add > ${language}: TEXT` };
+  return {
+    code: "E134",
+    message: `missing ${language} translation`,
+    fix: `add > ${language}: TEXT`,
+  };
 }
 
 export function tooFast(language: string, rate: number): Problem {

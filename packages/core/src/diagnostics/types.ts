@@ -32,6 +32,7 @@ export type DiagnosticCode =
   | "E137"
   | "E138"
   | "E141"
+  | "E142"
   | "E201"
   | "E202"
   | "E203"

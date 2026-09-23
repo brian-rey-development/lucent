@@ -134,6 +134,12 @@ export interface Video {
   readonly assets: Assets;
 }
 
-export type FileRead = { readonly ok: true; readonly text: string } | { readonly ok: false; readonly reason: string };
+export type FileFound = { readonly ok: true } | { readonly ok: false; readonly reason: string };
 
-export type ReadFile = (path: string) => Promise<FileRead>;
+export type FileRead =
+  { readonly ok: true; readonly text: string } | Exclude<FileFound, { ok: true }>;
+
+export interface FileAccess {
+  readonly readFile: (path: string) => Promise<FileRead>;
+  readonly findFile: (path: string) => Promise<FileFound>;
+}

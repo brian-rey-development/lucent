@@ -43,7 +43,13 @@ function boundedDistance(a: string, b: string, limit: number): number {
   return previous[b.length] ?? limit + 1;
 }
 
-function cell(a: string, b: string, i: number, j: number, [before, previous, current]: readonly number[][]): number {
+function cell(
+  a: string,
+  b: string,
+  i: number,
+  j: number,
+  [before, previous, current]: readonly number[][],
+): number {
   const cost = a[i - 1] === b[j - 1] ? 0 : 1;
   const swapped = i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1];
   return Math.min(

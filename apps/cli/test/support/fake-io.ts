@@ -5,6 +5,9 @@ export interface FakeIo extends Io {
   readonly err: string[];
 }
 
+const OUTSIDE = { ok: false, reason: "is outside the video folder" } as const;
+const MISSING = { ok: false, reason: "no such file" } as const;
+
 export function fakeIo(files: Readonly<Record<string, string>> = {}): FakeIo {
   const out: string[] = [];
   const err: string[] = [];
@@ -12,10 +15,13 @@ export function fakeIo(files: Readonly<Record<string, string>> = {}): FakeIo {
     out,
     err,
     readFile: async (path, root) => {
-      if (root !== undefined && !path.startsWith(`${root}/`))
-        return { ok: false, reason: "is outside the video folder" };
+      if (root !== undefined && !path.startsWith(`${root}/`)) return OUTSIDE;
       const text = files[path];
-      return text === undefined ? { ok: false, reason: "no such file" } : { ok: true, text };
+      return text === undefined ? MISSING : { ok: true, text };
+    },
+    findFile: async (path, root) => {
+      if (!path.startsWith(`${root}/`)) return OUTSIDE;
+      return files[path] === undefined ? MISSING : { ok: true };
     },
     stdout: (text) => out.push(text),
     stderr: (text) => err.push(text),

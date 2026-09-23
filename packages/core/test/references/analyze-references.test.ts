@@ -4,10 +4,12 @@ import { analyzeReferences } from "../../src/references/index.ts";
 import { analyzed, documentOf, FRONTMATTER, sceneOf, STEPS } from "../support/documents.ts";
 
 const check = async (yaml: string, next?: string): Promise<readonly string[]> => {
-  const scenes = next === undefined ? sceneOf(yaml) : `${sceneOf(yaml)}\n\n${sceneOf(next, undefined, "next")}`;
+  const scenes =
+    next === undefined ? sceneOf(yaml) : `${sceneOf(yaml)}\n\n${sceneOf(next, undefined, "next")}`;
   return analyzed(analyzeReferences, documentOf(scenes));
 };
-const lines = (steps: readonly string[]): string => `do:\n${steps.map((step) => `  - ${step}`).join("\n")}`;
+const lines = (steps: readonly string[]): string =>
+  `do:\n${steps.map((step) => `  - ${step}`).join("\n")}`;
 
 describe("analyzeReferences", () => {
   it("accepts elements, points, colors and changes that exist", async () => {
@@ -29,13 +31,31 @@ describe("analyzeReferences", () => {
       ["photo: blood\n    center: nucleus"],
       "E201 18:13 blood.do[0].center blood has no point nucleus; fix: use wbc|rbc_1",
     ],
-    [["photo: blood", "ring: $blood/wbcc"], "E201 18:11 blood.do[1].ring blood has no point wbcc; fix: use wbc"],
-    [["text: hi", "ring: $text/point"], "E201 18:11 blood.do[1].ring $text has no points; fix: target $text"],
+    [
+      ["photo: blood", "ring: $blood/wbcc"],
+      "E201 18:11 blood.do[1].ring blood has no point wbcc; fix: use wbc",
+    ],
+    [
+      ["text: hi", "ring: $text/point"],
+      "E201 18:11 blood.do[1].ring $text has no points; fix: target $text",
+    ],
     [["photo: blod"], "E203 17:12 blood.do[0].photo unknown asset blod; fix: use blood"],
-    [["photo: cell"], "E203 17:12 blood.do[0].photo unknown asset cell; fix: add cell to the manifest"],
-    [["photo: blood", "ring: $blod"], "E202 18:11 blood.do[1].ring $blod is not on screen; fix: use $blood"],
-    [["image: blood", "ring: $image"], "E202 18:11 blood.do[1].ring $image is not on screen; fix: use $blood"],
-    [["ring: $nothing"], "E202 17:11 blood.do[0].ring $nothing is not on screen; fix: show it first or keep it"],
+    [
+      ["photo: cell"],
+      "E203 17:12 blood.do[0].photo unknown asset cell; fix: add cell to the manifest",
+    ],
+    [
+      ["photo: blood", "ring: $blod"],
+      "E202 18:11 blood.do[1].ring $blod is not on screen; fix: use $blood",
+    ],
+    [
+      ["image: blood", "ring: $image"],
+      "E202 18:11 blood.do[1].ring $image is not on screen; fix: use $blood",
+    ],
+    [
+      ["ring: $nothing"],
+      "E202 17:11 blood.do[0].ring $nothing is not on screen; fix: show it first or keep it",
+    ],
     [
       ["photo: blood", "hide: $blood", "ring: $blood"],
       "E202 19:11 blood.do[2].ring $blood was hidden at blood.do[1]; fix: show it again or drop this reference",
@@ -65,8 +85,14 @@ describe("analyzeReferences", () => {
       ["photo: blood", "$blood: { x: 1 }"],
       "E105 18:5 blood.do[1].$blood is a photo, which has no state; fix: remove it; only text|bar|number|helix|bases change",
     ],
-    [["number: 1", "$number: 5"], "E105 18:5 blood.do[1].$number is 5; fix: write $number: {number}"],
-    [["text: a", "$text: { size: huge }"], 'E105 18:20 blood.do[1].$text.size is "huge"; fix: use s|m|l|xl'],
+    [
+      ["number: 1", "$number: 5"],
+      "E105 18:5 blood.do[1].$number is 5; fix: write $number: {number}",
+    ],
+    [
+      ["text: a", "$text: { size: huge }"],
+      'E105 18:20 blood.do[1].$text.size is "huge"; fix: use s|m|l|xl',
+    ],
   ])("reports %j", async (steps, expected) => {
     expect(await check(lines(steps))).toEqual([expected]);
   });
@@ -85,7 +111,12 @@ describe("analyzeReferences", () => {
     expect(await check(STEPS, `keep: $blod\n${STEPS}`)).toEqual([
       "E208 27:7 next.keep $blod is not on screen when next starts; fix: keep $blood",
     ]);
-    expect(await check(lines(["photo: blood", "hide: $blood"]), `keep: $blood\n${lines(["ring: $blood"])}`)).toEqual([
+    expect(
+      await check(
+        lines(["photo: blood", "hide: $blood"]),
+        `keep: $blood\n${lines(["ring: $blood"])}`,
+      ),
+    ).toEqual([
       "E208 27:7 next.keep $blood was hidden at blood.do[1]; fix: show it again or drop this reference",
     ]);
   });
@@ -99,9 +130,9 @@ describe("analyzeReferences", () => {
 
   it("declares the element of a step that failed validation", async () => {
     expect(await check(lines(["phto: blood", "ring: $blood/wbc"]))).toEqual([]);
-    expect(await check(lines(["photo: blood\n    drift: medium", "ring: $blood/nucleus"]))).toEqual([
-      "E201 19:11 blood.do[1].ring blood has no point nucleus; fix: use wbc|rbc_1",
-    ]);
+    expect(await check(lines(["photo: blood\n    drift: medium", "ring: $blood/nucleus"]))).toEqual(
+      ["E201 19:11 blood.do[1].ring blood has no point nucleus; fix: use wbc|rbc_1"],
+    );
   });
 
   it("reports a missing manifest once", async () => {
@@ -116,6 +147,8 @@ describe("analyzeReferences", () => {
   });
 
   it("checks nothing against a manifest it could not read", async () => {
-    expect(await analyzed(analyzeReferences, documentOf(sceneOf(lines(["photo: cell"]))), {})).toEqual([]);
+    expect(
+      await analyzed(analyzeReferences, documentOf(sceneOf(lines(["photo: cell"]))), {}),
+    ).toEqual([]);
   });
 });

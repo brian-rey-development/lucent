@@ -37,7 +37,10 @@ describe("run", () => {
     [["check", "a", "--json=yes"], "lucent: --json takes no value; run lucent --help"],
     [["catalog", "a", "b"], "lucent: catalog takes one verb; run lucent --help"],
     [["catalog", "--schema"], "lucent: --schema needs a verb; run lucent --help"],
-    [["catalog", "--codes", "ring"], "lucent: --codes takes no verb or --schema; run lucent --help"],
+    [
+      ["catalog", "--codes", "ring"],
+      "lucent: --codes takes no verb or --schema; run lucent --help",
+    ],
   ])("rejects %j with one line and exit code 2", async (argv, expected) => {
     const io = fakeIo();
 

@@ -14,7 +14,8 @@ export function fixFor(issue: z.core.$ZodIssue, value: unknown): string {
 }
 
 function typeFix(expected: string, value: unknown): string {
-  if (expected === "number" && typeof value === "string" && NUMERIC.test(value)) return "remove the quotes";
+  if (expected === "number" && typeof value === "string" && NUMERIC.test(value))
+    return "remove the quotes";
   return `write ${TYPE_NAMES[expected] ?? expected}`;
 }
 
@@ -28,6 +29,7 @@ function optionsFix(options: readonly string[], value: unknown): string {
 function boundFix(relation: string, limit: number | bigint, origin: string): string {
   const unit = UNITS[origin];
   if (unit === undefined) return `use ${relation} ${limit}`;
-  if (relation === "at least" && limit === 1) return origin === "array" ? "add an item" : "write text";
+  if (relation === "at least" && limit === 1)
+    return origin === "array" ? "add an item" : "write text";
   return `use ${relation} ${limit} ${unit}`;
 }

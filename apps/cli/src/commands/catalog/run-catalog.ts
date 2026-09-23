@@ -14,6 +14,8 @@ export function runCatalog({ verb, schema, codes }: CatalogArgs, io: Io): ExitCo
 function describeVerb(name: string, schema: boolean): string {
   const verb = findVerb(name);
   if (verb === undefined)
-    throw new CliError(`unknown verb ${name}; verbs: ${VERBS.map((known) => known.name).join(", ")}`);
+    throw new CliError(
+      `unknown verb ${name}; verbs: ${VERBS.map((known) => known.name).join(", ")}`,
+    );
   return schema ? JSON.stringify(verbJsonSchema(verb)) : formatVerb(verb);
 }

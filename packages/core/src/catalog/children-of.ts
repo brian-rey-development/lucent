@@ -1,6 +1,9 @@
 import type { Child, VerbDefinition } from "./types.ts";
 
-export function childrenOf(verb: VerbDefinition, props: Readonly<Record<string, unknown>>): readonly Child[] {
+export function childrenOf(
+  verb: VerbDefinition,
+  props: Readonly<Record<string, unknown>>,
+): readonly Child[] {
   return Object.entries(verb.children).flatMap(([key, kind]): readonly Child[] => {
     const value = props[key];
     if (value === undefined) return [];

@@ -6,27 +6,44 @@ import { findDuplicateKeys } from "./find-duplicate-keys.ts";
 import { findLexicalErrors } from "./find-lexical-errors.ts";
 import type { FoundError, YamlError, YamlParse } from "./types.ts";
 
+const OPTIONS = { prettyErrors: false, uniqueKeys: false, logLevel: "silent" } as const;
+
 export function parseYaml({ text, firstLine }: TextBlock): YamlParse {
   const lineCounter = new LineCounter();
-  const document = parseDocument(text, { lineCounter, prettyErrors: false, uniqueKeys: false, logLevel: "silent" });
+  const document = parseDocument(text, { ...OPTIONS, lineCounter });
   const toPosition = (offset: number): Position => {
     const { line, col } = lineCounter.linePos(offset);
     return { line: line + firstLine - 1, column: col };
   };
-  const errors = errorsOf(text, document);
-  if (errors.length > 0) return { kind: "invalid", errors: errors.map((error) => locate(error, toPosition)) };
-  return { kind: "parsed", yaml: { value: document.toJS(), locate: createLocator(document, toPosition) } };
-}
-
-function errorsOf(text: string, document: Document.Parsed): readonly FoundError[] {
   const lexical = findLexicalErrors(text);
-  if (lexical.length > 0) return lexical;
-  // Errors after the first are almost always cascades of it and would only cost tokens.
-  const [syntax] = document.errors;
-  if (syntax === undefined) return findDuplicateKeys(document);
-  return [{ kind: "syntax", offset: syntax.pos[0], code: syntax.code, message: syntax.message }];
+  const fatal = fatalErrors(document, lexical);
+  const located = (errors: readonly FoundError[]): readonly YamlError[] =>
+    errors.map((error) => locate(error, toPosition));
+  if (fatal.length > 0) return { kind: "invalid", errors: located(fatal) };
+  const value: unknown = document.toJS();
+  const yaml = { value, locate: createLocator(document, toPosition) };
+  return { kind: "parsed", yaml, errors: located(lexical) };
 }
 
-function locate({ offset, ...error }: FoundError, toPosition: (offset: number) => Position): YamlError {
+// Comments only cut values, so the document stays usable. Any other lexical error, or a comment
+// that breaks the syntax, makes it untrustworthy.
+function fatalErrors(
+  document: Document.Parsed,
+  lexical: readonly FoundError[],
+): readonly FoundError[] {
+  const [syntax] = document.errors;
+  const onlyComments = lexical.every(({ kind }) => kind === "comment");
+  if (!onlyComments || (lexical.length > 0 && syntax !== undefined)) return lexical;
+  // Errors after the first are almost always cascades of it and would only cost tokens.
+  if (syntax !== undefined)
+    return [{ kind: "syntax", offset: syntax.pos[0], code: syntax.code, message: syntax.message }];
+  const duplicates = findDuplicateKeys(document);
+  return duplicates.length > 0 ? [...lexical, ...duplicates] : [];
+}
+
+function locate(
+  { offset, ...error }: FoundError,
+  toPosition: (offset: number) => Position,
+): YamlError {
   return { ...error, position: toPosition(offset) };
 }

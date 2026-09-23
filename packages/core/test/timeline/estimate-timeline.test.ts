@@ -10,7 +10,9 @@ describe("estimateTimeline", () => {
       "One two three [four|f] five.\n> es: x\n\n(pause 1s)\n\nSix [seven].\n> es: y",
       "a",
     );
-    const video = await videoOf(documentOf(`${first}\n\n${sceneOf(undefined, "Eight.\n> es: z", "b")}`));
+    const video = await videoOf(
+      documentOf(`${first}\n\n${sceneOf(undefined, "Eight.\n> es: z", "b")}`),
+    );
 
     expect(estimateTimeline(video.scenes)).toEqual({
       duration: 6.3,
@@ -30,7 +32,9 @@ describe("estimateTimeline", () => {
   });
 
   it("does not accumulate rounding", async () => {
-    const scenes = Array.from({ length: 20 }, (_, index) => sceneOf(undefined, "Word.\n> es: x", `s${index}`));
+    const scenes = Array.from({ length: 20 }, (_, index) =>
+      sceneOf(undefined, "Word.\n> es: x", `s${index}`),
+    );
     const video = await videoOf(documentOf(scenes.join("\n\n")));
 
     expect(estimateTimeline(video.scenes).duration).toBe(21.7);

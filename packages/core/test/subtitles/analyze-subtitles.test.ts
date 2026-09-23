@@ -21,7 +21,10 @@ describe("analyzeSubtitles", () => {
       "This is [blood].\n> es: Sangre.\n> fr: Sang.",
       "E133 14:1 blood fr is not in subtitles; fix: add fr to subtitles or remove the line",
     ],
-    ["This is [blood].\n> es: Sangre.\n> es: Otra.", "E135 14:1 blood duplicate es translation; fix: remove one"],
+    [
+      "This is [blood].\n> es: Sangre.\n> es: Otra.",
+      "E135 14:1 blood duplicate es translation; fix: remove one",
+    ],
     [
       `This is [blood].\n> es: ${"sangre ".repeat(10)}`,
       "W401 13:1 blood es subtitle needs 60 characters per second, max 20; fix: shorten the translation",
@@ -36,6 +39,8 @@ describe("analyzeSubtitles", () => {
 
   it("skips paragraphs without words and videos with invalid subtitles", async () => {
     expect(await check("[]\n> es: algo")).toEqual([]);
-    expect(await check("This is [blood].", FRONTMATTER.replace("[en, es]", "[en, en]"))).toEqual([]);
+    expect(await check("This is [blood].", FRONTMATTER.replace("[en, es]", "[en, en]"))).toEqual(
+      [],
+    );
   });
 });

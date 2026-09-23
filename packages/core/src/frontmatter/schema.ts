@@ -15,7 +15,9 @@ export const subtitlesSchema = z
 export const frontmatterSchema = z.strictObject({
   lucent: z.literal(0),
   title: textSchema,
-  voice: z.string().regex(/^[a-z0-9-]+\/[a-z0-9_-]+$/, { error: "ENGINE/VOICE, like kokoro/am_fenrir" }),
+  voice: z
+    .string()
+    .regex(/^[a-z0-9-]+\/[a-z0-9_-]+$/, { error: "ENGINE/VOICE, like kokoro/am_fenrir" }),
   subtitles: subtitlesSchema,
   colors: z.record(colorNameSchema, hex).optional(),
   assets: textSchema.optional(),

@@ -8,20 +8,20 @@ import type { LineStart, Lines, LocatedProblem, ParagraphInput } from "./types.t
 
 type Starts = readonly [LineStart, ...LineStart[]];
 
-export function parseParagraph({ lines, translations, index, scene }: ParagraphInput): Result<Paragraph> {
+export function parseParagraph(input: ParagraphInput): Result<Paragraph> {
+  const { lines, index, scene } = input;
   const starts = lineStarts(lines);
   const scan = scanCues(lines.map(({ text }) => text).join("\n"), index, createCursor(starts));
   const problems = [...scan.problems, ...strayBrackets(scan.spoken, createCursor(starts))];
   const spoken = scan.spoken.replace(STRAY_BRACKET, " ");
-  const [first] = lines;
   const paragraph: Paragraph = {
     kind: "paragraph",
     index,
     text: scan.text.replace(STRAY_BRACKET, "").replace(WHITESPACE, " ").trim(),
     lines: sourceLines(starts, spoken),
     cues: scan.cues,
-    translations,
-    position: { line: first.line, column: first.column },
+    translations: input.translations,
+    position: { line: lines[0].line, column: lines[0].column },
   };
   const diagnostics = problems.map(({ problem, position }) =>
     createDiagnostic(problem, { where: scene, scene, position }),
@@ -30,7 +30,11 @@ export function parseParagraph({ lines, translations, index, scene }: ParagraphI
 }
 
 function sourceLines(starts: Starts, spoken: string): readonly SourceLine[] {
-  return starts.map(({ text, line, offset }) => ({ text, line, spoken: spoken.slice(offset, offset + text.length) }));
+  return starts.map(({ text, line, offset }) => ({
+    text,
+    line,
+    spoken: spoken.slice(offset, offset + text.length),
+  }));
 }
 
 function lineStarts([first, ...rest]: Lines): Starts {
@@ -47,12 +51,16 @@ function createCursor([first, ...rest]: Starts): (offset: number) => Position {
   let current = first;
   let index = 0;
   return (offset) => {
-    for (let next = rest[index]; next !== undefined && next.offset <= offset; next = rest[++index]) current = next;
+    for (let next = rest[index]; next !== undefined && next.offset <= offset; next = rest[++index])
+      current = next;
     return { line: current.line, column: offset - current.offset + 1 };
   };
 }
 
-function strayBrackets(spoken: string, locate: (offset: number) => Position): readonly LocatedProblem[] {
+function strayBrackets(
+  spoken: string,
+  locate: (offset: number) => Position,
+): readonly LocatedProblem[] {
   return [...spoken.matchAll(STRAY_BRACKET)].map((match) => ({
     problem: unmatchedBracket(match[0]),
     position: locate(match.index),

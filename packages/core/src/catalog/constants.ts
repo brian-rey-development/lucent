@@ -41,9 +41,9 @@ export const VERBS: readonly VerbDefinition[] = [
 
 export const VERB_NAMES: readonly string[] = VERBS.map(({ name }) => name);
 
-export const CHANGEABLE_VERBS: readonly string[] = VERBS.filter(({ change }) => change !== undefined).map(
-  ({ name }) => name,
-);
+export const CHANGEABLE_VERBS: readonly string[] = VERBS.filter(
+  ({ change }) => change !== undefined,
+).map(({ name }) => name);
 
 export const PROP_NAMES: ReadonlySet<string> = new Set(
   VERBS.flatMap(({ name, props }) => Object.keys(props.shape).filter((key) => key !== name)),

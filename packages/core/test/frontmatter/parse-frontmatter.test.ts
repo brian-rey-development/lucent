@@ -45,7 +45,8 @@ describe("parseFrontmatter", () => {
   });
 
   it("marks invalid or absent fields", () => {
-    const source = "---\nlucent: 0\ntitle: T\nvoice: a/b\nsubtitles: [EN]\ncolors: [red]\nassets: 3\n---";
+    const source =
+      "---\nlucent: 0\ntitle: T\nvoice: a/b\nsubtitles: [EN]\ncolors: [red]\nassets: 3\n---";
     const { value } = parse(source);
 
     expect(value).toEqual({ subtitles: undefined, colors: undefined, assets: { kind: "invalid" } });

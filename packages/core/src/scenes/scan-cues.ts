@@ -5,12 +5,13 @@ import { EMPTY_CUE, invalidCueId, TWO_IDS } from "./problems.ts";
 import type { CueScan, LocatedProblem } from "./types.ts";
 
 interface Scan {
+  readonly paragraph: number;
+  readonly locate: (offset: number) => Position;
   spoken: string;
   text: string;
   words: number;
   last: number;
   readonly cues: Cue[];
-  readonly problems: LocatedProblem[];
 }
 
 interface ParsedCue {
@@ -20,29 +21,43 @@ interface ParsedCue {
   readonly problem: LocatedProblem["problem"] | undefined;
 }
 
-export function scanCues(text: string, paragraph: number, locate: (offset: number) => Position): CueScan {
-  const scan: Scan = { spoken: "", text: "", words: 0, last: 0, cues: [], problems: [] };
-  for (const match of text.matchAll(CUE)) addCue(scan, match, paragraph, locate);
+export function scanCues(
+  text: string,
+  paragraph: number,
+  locate: (offset: number) => Position,
+): CueScan {
+  const scan: Scan = { paragraph, locate, spoken: "", text: "", words: 0, last: 0, cues: [] };
+  const problems: LocatedProblem[] = [];
+  for (const match of text.matchAll(CUE)) addCue(scan, problems, match);
   const rest = text.slice(scan.last);
-  return { spoken: scan.spoken + rest, text: scan.text + rest, cues: scan.cues, problems: scan.problems };
+  return { spoken: scan.spoken + rest, text: scan.text + rest, cues: scan.cues, problems };
 }
 
-function addCue(scan: Scan, match: RegExpExecArray, paragraph: number, locate: (offset: number) => Position): void {
+function addCue(scan: Scan, problems: LocatedProblem[], match: RegExpExecArray): void {
   const [source] = match;
   const before = match.input.slice(scan.last, match.index);
   const cue = parseCue(source.slice(1, -1));
-  const position = locate(match.index);
   scan.words += countWords(before);
-  if (cue.problem !== undefined) scan.problems.push({ problem: cue.problem, position });
-  if (cue.phrase !== "") {
-    const end = locate(match.index + source.length - 1);
-    const malformed = cue.problem !== undefined;
-    scan.cues.push({ phrase: cue.phrase, id: cue.id, paragraph, wordIndex: scan.words, position, end, malformed });
-  }
-  scan.spoken += `${before} ${cue.raw}${source.slice(cue.raw.length + 1).replace(NOT_NEWLINE, " ")}`;
+  if (cue.problem !== undefined)
+    problems.push({ problem: cue.problem, position: scan.locate(match.index) });
+  if (cue.phrase !== "") pushCue(scan, cue, match);
+  const tail = source.slice(cue.raw.length + 1).replace(NOT_NEWLINE, " ");
+  scan.spoken += `${before} ${cue.raw}${tail}`;
   scan.text += `${before}${cue.raw}`;
   scan.words += countWords(cue.phrase);
   scan.last = match.index + source.length;
+}
+
+function pushCue(scan: Scan, { phrase, id, problem }: ParsedCue, match: RegExpExecArray): void {
+  scan.cues.push({
+    phrase,
+    id,
+    paragraph: scan.paragraph,
+    wordIndex: scan.words,
+    position: scan.locate(match.index),
+    end: scan.locate(match.index + match[0].length - 1),
+    malformed: problem !== undefined,
+  });
 }
 
 function parseCue(inner: string): ParsedCue {
@@ -51,6 +66,7 @@ function parseCue(inner: string): ParsedCue {
   if (phrase === "") return { raw, phrase, id: undefined, problem: EMPTY_CUE };
   if (ids.length > 1) return { raw, phrase, id: undefined, problem: TWO_IDS };
   const id = ids[0]?.trim();
-  if (id !== undefined && !isId(id)) return { raw, phrase, id: undefined, problem: invalidCueId(id) };
+  if (id !== undefined && !isId(id))
+    return { raw, phrase, id: undefined, problem: invalidCueId(id) };
   return { raw, phrase, id, problem: undefined };
 }

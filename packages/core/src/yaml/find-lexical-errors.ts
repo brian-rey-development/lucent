@@ -1,6 +1,13 @@
 import { Lexer } from "yaml";
 
-import { COMMENT_START, INDICATORS, NEWLINE, SCALAR_START, WHITESPACE, ZERO_WIDTH_TOKENS } from "./constants.ts";
+import {
+  COMMENT_START,
+  INDICATORS,
+  NEWLINE,
+  SCALAR_START,
+  WHITESPACE,
+  ZERO_WIDTH_TOKENS,
+} from "./constants.ts";
 import type { TokenError, TokenErrorKind } from "./types.ts";
 
 export function findLexicalErrors(text: string): readonly TokenError[] {
@@ -19,7 +26,11 @@ export function findLexicalErrors(text: string): readonly TokenError[] {
   return errors;
 }
 
-function classify(token: string, previous: string, lineHasContent: boolean): TokenErrorKind | undefined {
+function classify(
+  token: string,
+  previous: string,
+  lineHasContent: boolean,
+): TokenErrorKind | undefined {
   if (token.startsWith(COMMENT_START)) return lineHasContent ? "comment" : undefined;
   if (previous === SCALAR_START) return undefined;
   return INDICATORS[token.charAt(0)];

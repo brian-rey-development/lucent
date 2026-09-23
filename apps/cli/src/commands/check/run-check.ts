@@ -12,7 +12,10 @@ export async function runCheck({ file, json, scene }: CheckArgs, io: Io): Promis
   const folder = dirname(path);
   const source = await io.readFile(path);
   if (!source.ok) throw new InputError(`cannot read ${file}: ${source.reason}`);
-  const full = await check(source.text, { readFile: async (asset) => io.readFile(resolve(folder, asset), folder) });
+  const full = await check(source.text, {
+    readFile: async (asset) => io.readFile(resolve(folder, asset), folder),
+    findFile: async (asset) => io.findFile(resolve(folder, asset), folder),
+  });
   const report = relativeFiles(scene === undefined ? full : selected(full, scene), folder, io.cwd);
   io.stdout(json ? formatJson(file, report) : formatText(file, report));
   return report.ok ? EXIT_CODES.ok : EXIT_CODES.failed;

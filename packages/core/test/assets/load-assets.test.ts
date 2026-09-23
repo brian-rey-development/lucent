@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import { loadAssets } from "../../src/assets/index.ts";
-import { MANIFEST, readFileOf, summarize } from "../support/documents.ts";
+import { filesOf, MANIFEST, summarize } from "../support/documents.ts";
 
 const SOURCE = { kind: "file", path: "images.yaml", position: { line: 7, column: 9 } } as const;
-const load = async (manifest: string) => loadAssets(SOURCE, readFileOf({ "images.yaml": manifest }));
+const IMAGES = { "blood.jpg": "", "b.jpg": "", "c.jpg": "", "d.jpg": "" };
+const load = async (manifest: string) =>
+  loadAssets(SOURCE, filesOf({ ...IMAGES, "images.yaml": manifest }));
 
 describe("loadAssets", () => {
   it("loads the manifest", async () => {
@@ -29,15 +31,18 @@ describe("loadAssets", () => {
   });
 
   it("needs no manifest when the frontmatter has none", async () => {
-    expect(await loadAssets({ kind: "none" }, readFileOf({}))).toEqual({ value: { status: "none" }, diagnostics: [] });
-    expect(await loadAssets({ kind: "invalid" }, readFileOf({}))).toEqual({
+    expect(await loadAssets({ kind: "none" }, filesOf({}))).toEqual({
+      value: { status: "none" },
+      diagnostics: [],
+    });
+    expect(await loadAssets({ kind: "invalid" }, filesOf({}))).toEqual({
       value: { status: "unavailable" },
       diagnostics: [],
     });
   });
 
   it("reports a manifest it cannot read, with the reason", async () => {
-    const { value, diagnostics } = await loadAssets(SOURCE, readFileOf({}));
+    const { value, diagnostics } = await loadAssets(SOURCE, filesOf({}));
 
     expect(value).toEqual({ status: "unavailable" });
     expect(diagnostics.map(summarize)).toEqual([
@@ -51,8 +56,15 @@ describe("loadAssets", () => {
     );
 
     expect(
-      diagnostics.map(({ code, file, position }) => `${code} ${file ?? ""}:${position.line}:${position.column}`),
-    ).toEqual(["E105 images.yaml:3:11", "E105 images.yaml:4:7", "E105 images.yaml:5:1", "E105 images.yaml:10:9"]);
+      diagnostics.map(
+        ({ code, file, position }) => `${code} ${file ?? ""}:${position.line}:${position.column}`,
+      ),
+    ).toEqual([
+      "E105 images.yaml:3:11",
+      "E105 images.yaml:4:7",
+      "E105 images.yaml:5:1",
+      "E105 images.yaml:10:9",
+    ]);
     expect(value).toEqual({
       status: "loaded",
       complete: false,
@@ -64,14 +76,33 @@ describe("loadAssets", () => {
     });
   });
 
+  it("reports asset files it cannot find, relative to the manifest", async () => {
+    const source = { ...SOURCE, path: "assets/images.yaml" };
+    const files = {
+      "assets/images.yaml": `${MANIFEST}\nkaryotype:\n  file: k.png`,
+      "assets/k.png": "",
+    };
+    const { diagnostics } = await loadAssets(source, filesOf(files));
+
+    expect(diagnostics.map(summarize)).toEqual([
+      "E142 2:9 manifest.blood.file cannot find blood.jpg: no such file; fix: check the path; it is relative to the manifest",
+    ]);
+  });
+
   it("treats an empty manifest as empty and a broken one as unavailable", async () => {
-    expect((await load("")).value).toEqual({ status: "loaded", complete: true, manifest: new Map() });
+    expect((await load("")).value).toEqual({
+      status: "loaded",
+      complete: true,
+      manifest: new Map(),
+    });
     expect((await load("- a")).value).toEqual({ status: "unavailable" });
     expect((await load("a: [")).value).toEqual({ status: "unavailable" });
   });
 
   it("accepts entries without points and rejects invalid point names", async () => {
-    const { value } = await load("a:\n  file: a.jpg\nb:\n  file: b.jpg\n  points:\n    Bad: [0, 0, 0]");
+    const { value } = await load(
+      "a:\n  file: a.jpg\nb:\n  file: b.jpg\n  points:\n    Bad: [0, 0, 0]",
+    );
 
     expect(value).toEqual({
       status: "loaded",

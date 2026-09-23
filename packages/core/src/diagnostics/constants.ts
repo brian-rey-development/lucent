@@ -37,6 +37,7 @@ export const DIAGNOSTIC_CODES: Readonly<Record<DiagnosticCode, CodeDefinition>> 
   E137: { severity: "error", summary: "duplicate cue" },
   E138: { severity: "error", summary: "malformed pause" },
   E141: { severity: "error", summary: "asset manifest cannot be read" },
+  E142: { severity: "error", summary: "asset file cannot be found" },
   E201: { severity: "error", summary: "unknown point" },
   E202: { severity: "error", summary: "element not on screen" },
   E203: { severity: "error", summary: "unknown asset" },

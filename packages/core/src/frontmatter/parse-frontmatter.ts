@@ -15,17 +15,20 @@ const UNKNOWN: Settings = Object.freeze({
 const PLACE = { where: WHERE } as const;
 
 export function parseFrontmatter(split: FrontmatterSplit): Result<Settings> {
-  if (split.kind !== "found") {
-    const problem = split.kind === "missing" ? MISSING : UNCLOSED;
-    return {
-      value: UNKNOWN,
-      diagnostics: [createDiagnostic(problem, { ...PLACE, position: { line: split.line, column: 1 } })],
-    };
-  }
+  if (split.kind !== "found") return notFound(split);
   const read = readYaml(split.block, PLACE);
   if (read.value === undefined) return { value: UNKNOWN, diagnostics: read.diagnostics };
   const { locate } = read.value;
   const values = read.value.value ?? {};
-  const { diagnostics } = validateValue(frontmatterSchema, values, { locate, path: [], place: PLACE });
-  return { value: isRecord(values) ? settingsOf(values, locate) : UNKNOWN, diagnostics };
+  const validated = validateValue(frontmatterSchema, values, { locate, path: [], place: PLACE });
+  return {
+    value: isRecord(values) ? settingsOf(values, locate) : UNKNOWN,
+    diagnostics: [...read.diagnostics, ...validated.diagnostics],
+  };
+}
+
+function notFound({ kind, line }: Exclude<FrontmatterSplit, { kind: "found" }>): Result<Settings> {
+  const problem = kind === "missing" ? MISSING : UNCLOSED;
+  const position = { line, column: 1 };
+  return { value: UNKNOWN, diagnostics: [createDiagnostic(problem, { ...PLACE, position })] };
 }

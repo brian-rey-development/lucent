@@ -21,8 +21,26 @@ describe("parseYaml", () => {
   });
 
   it.each([
-    ["a: b # c", "comment", "# c", 6],
-    ["dna: #1F8FC4", "comment", "#1F8FC4", 6],
+    ["a: b # c", { a: "b" }, "# c", 6],
+    ["dna: #1F8FC4", { dna: null }, "#1F8FC4", 6],
+  ])("parses %j but reports the comment that cut it", (text, value, token, column) => {
+    const parsed = parseYaml({ text, firstLine: 10 });
+
+    expect(parsed.kind === "parsed" && parsed.yaml.value).toEqual(value);
+    expect(parsed.errors).toEqual([{ kind: "comment", token, position: { line: 10, column } }]);
+  });
+
+  it("rejects a comment that breaks the syntax, and comments next to other lexical errors", () => {
+    expect(invalid("dna: { a: #1F8FC4 }")).toEqual([
+      { kind: "comment", token: "#1F8FC4 }", position: { line: 10, column: 11 } },
+    ]);
+    expect(invalid("a: b # c\nd: *e")).toEqual([
+      { kind: "comment", token: "# c", position: { line: 10, column: 6 } },
+      { kind: "alias", token: "*e", position: { line: 11, column: 4 } },
+    ]);
+  });
+
+  it.each([
     ["a: *emphasis*", "alias", "*emphasis*", 4],
     ["a: &x b", "anchor", "&x", 4],
     ["a: !custom b", "tag", "!custom", 4],
@@ -40,12 +58,18 @@ describe("parseYaml", () => {
   });
 
   it("reports duplicate keys", () => {
-    expect(invalid("a: 1\na: 2")).toEqual([{ kind: "duplicate", token: "a", position: { line: 11, column: 1 } }]);
+    expect(invalid("a: 1\na: 2")).toEqual([
+      { kind: "duplicate", token: "a", position: { line: 11, column: 1 } },
+    ]);
   });
 
   it("reports only the first syntax error", () => {
     expect(invalid("a: [1, 2\nb: [")).toEqual([
-      expect.objectContaining({ kind: "syntax", code: "BAD_INDENT", position: { line: 11, column: 1 } }),
+      expect.objectContaining({
+        kind: "syntax",
+        code: "BAD_INDENT",
+        position: { line: 11, column: 1 },
+      }),
     ]);
   });
 });

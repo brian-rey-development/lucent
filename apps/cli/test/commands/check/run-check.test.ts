@@ -4,7 +4,11 @@ import { runCheck } from "../../../src/commands/check/index.ts";
 import { MANIFEST, VIDEO } from "../../support/documents.ts";
 import { fakeIo } from "../../support/fake-io.ts";
 
-const FILES = { "/work/sub/video.lucent.md": VIDEO, "/work/sub/assets/images.yaml": MANIFEST };
+const FILES = {
+  "/work/sub/video.lucent.md": VIDEO,
+  "/work/sub/assets/images.yaml": MANIFEST,
+  "/work/sub/assets/blood.jpg": "",
+};
 const args = { file: "sub/video.lucent.md", json: false, scene: undefined };
 
 describe("runCheck", () => {
@@ -28,6 +32,16 @@ describe("runCheck", () => {
     );
   });
 
+  it("finds asset files relative to the manifest", async () => {
+    const { "/work/sub/assets/blood.jpg": _image, ...files } = FILES;
+    const io = fakeIo(files);
+
+    expect(await runCheck(args, io)).toBe(1);
+    expect(io.out[0]?.split("\n")[0]).toBe(
+      "E142 sub/assets/images.yaml:2:9 manifest.blood.file cannot find blood.jpg: no such file; fix: check the path; it is relative to the manifest",
+    );
+  });
+
   it("selects one scene with its own duration", async () => {
     const io = fakeIo(FILES);
 
@@ -43,7 +57,9 @@ describe("runCheck", () => {
       "no scene nope; scenes: blood, cells",
     );
     const empty = fakeIo({ "/work/sub/video.lucent.md": "---\nlucent: 0\n---" });
-    await expect(runCheck({ ...args, scene: "a" }, empty)).rejects.toThrow("the file has no scenes");
+    await expect(runCheck({ ...args, scene: "a" }, empty)).rejects.toThrow(
+      "the file has no scenes",
+    );
   });
 
   it("prints the report as JSON with the file and counts", async () => {
@@ -61,7 +77,10 @@ describe("runCheck", () => {
   });
 
   it("caps the output and escapes control characters", async () => {
-    const noisy = VIDEO.replace("This is [blood].", `This is [blood]. ${"& ".repeat(60)}\u001b[31m`);
+    const noisy = VIDEO.replace(
+      "This is [blood].",
+      `This is [blood]. ${"& ".repeat(60)}\u001b[31m`,
+    );
     const io = fakeIo({ ...FILES, "/work/sub/video.lucent.md": noisy });
     await runCheck(args, io);
     const lines = io.out[0]?.split("\n") ?? [];
