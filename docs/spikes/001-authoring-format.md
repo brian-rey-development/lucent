@@ -1,12 +1,12 @@
 # Spike 001: Authoring format
 
-| | |
-|---|---|
-| Status | Complete |
-| Date | 2026-09-23 |
+|          |                                                                                                                                                                                   |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status   | Complete                                                                                                                                                                          |
+| Date     | 2026-09-23                                                                                                                                                                        |
 | Question | What file format lets an agent (or a person) describe a narrated explainer with the fewest tokens, the fewest failed attempts, and full coverage of what the Halden lessons need? |
-| Informs | ADR 0002, 0005 |
-| Machine | MacBook M5 Pro, 15 CPU cores, 24 GB; Node 24.21; `yaml` 2.9.1; token counts with tiktoken `o200k_base` as a proxy for Claude's tokenizer (spike 007) |
+| Informs  | ADR 0002, 0005                                                                                                                                                                    |
+| Machine  | MacBook M5 Pro, 15 CPU cores, 24 GB; Node 24.21; `yaml` 2.9.1; token counts with tiktoken `o200k_base` as a proxy for Claude's tokenizer (spike 007)                              |
 
 ## 1. Question and why it matters
 
@@ -33,13 +33,13 @@ and `wait_for_line(i, fraction)`. That coupling caused most of its timing bugs.
 
 Measured on the two scenes (tokenizer: `o200k_base` proxy):
 
-| Encoding | Total tokens | Narration (EN + ES) | Visual direction overhead | Overhead vs Manim |
-|---|---|---|---|---|
-| Manim code + Markdown script (prototype) | 2,012 | 633 | 1,379 | 1.00 |
-| A. YAML, plain scalars | 1,031 | 633 | 398 | 0.29 |
-| B. YAML, all prose quoted | 1,047 | 633 | 414 | 0.30 |
-| C. Markdown prose + one YAML block per scene | 971 | 633 | 338 | 0.25 |
-| D. Markdown with inline directives | 853 | 633 | 220 | 0.16 |
+| Encoding                                     | Total tokens | Narration (EN + ES) | Visual direction overhead | Overhead vs Manim |
+| -------------------------------------------- | ------------ | ------------------- | ------------------------- | ----------------- |
+| Manim code + Markdown script (prototype)     | 2,012        | 633                 | 1,379                     | 1.00              |
+| A. YAML, plain scalars                       | 1,031        | 633                 | 398                       | 0.29              |
+| B. YAML, all prose quoted                    | 1,047        | 633                 | 414                       | 0.30              |
+| C. Markdown prose + one YAML block per scene | 971          | 633                 | 338                       | 0.25              |
+| D. Markdown with inline directives           | 853          | 633                 | 220                       | 0.16              |
 
 Every declarative option cuts the visual direction cost by 3.5x to 6x. Total source shrinks only about 2x, because
 the words themselves are two thirds of the file. The format cannot reduce narration, so the right metric is the
@@ -52,13 +52,13 @@ because of a colon followed by a space ("Contalos: cuarenta y seis cromosomas").
 
 Parser probes with `yaml` 2.9.1:
 
-| Input | Result |
-|---|---|
-| `en: [Zoom in] far beyond...` | Parse error (a line starting with `[` is a list) |
-| `en: Chromosome one: the largest` | Parse error |
-| `en: *emphasis* first` | Parse error (`*` is an alias) |
-| `en: Pair #1 is the largest # really` | **Parses as `"Pair"`. The rest is silently dropped as a comment.** |
-| `flag: no`, `gt: 0/1`, `ratio: 1:30` | Correct strings (YAML 1.2 core schema; the "Norway problem" does not apply) |
+| Input                                 | Result                                                                      |
+| ------------------------------------- | --------------------------------------------------------------------------- |
+| `en: [Zoom in] far beyond...`         | Parse error (a line starting with `[` is a list)                            |
+| `en: Chromosome one: the largest`     | Parse error                                                                 |
+| `en: *emphasis* first`                | Parse error (`*` is an alias)                                               |
+| `en: Pair #1 is the largest # really` | **Parses as `"Pair"`. The rest is silently dropped as a comment.**          |
+| `flag: no`, `gt: 0/1`, `ratio: 1:30`  | Correct strings (YAML 1.2 core schema; the "Norway problem" does not apply) |
 
 The silent truncation is the dangerous one: a narration line loses words, and nothing reports it.
 
@@ -69,15 +69,15 @@ The silent truncation is the dangerous one: a narration line loses words, and no
 
 ### 3.4 Prior art converges on inline marks plus word timings
 
-| Tool | How visuals sync to speech | Lesson for Lucent |
-|---|---|---|
-| manim-voiceover 0.4.0 | SSML-style marks inside the text: `<bookmark mark='A'/>trigger animations`, then imperative `self.wait_until_bookmark("A")`. Word boundaries come from the TTS service (Azure) or from Whisper transcription, and a mark's time is interpolated by character distance (`tracker.py`) | Inline marks work. Its weaknesses are the ones Lucent removes: imperative waits, named marks separate from the words, and transcription when the TTS gives no timings |
-| SSML `<mark name="..."/>` (W3C), supported by cloud TTS speech marks | Named marks in the text, reported back with times | A standard, but verbose and needs ids |
-| Motion Canvas | Generator code with `yield* waitUntil('event')`; event times are dragged by hand in the editor timeline | Timing lives in a GUI, not in the file: not agent-friendly |
-| Remotion | Frames and sequences in React code | Timing is code |
-| Lucent v0.1 draft | `say` string per scene with `[cue]` brackets; steps reference cues | Closest to our needs; one `say` string per scene prevents per-sentence caching |
-| Slidev, Marp | Markdown with YAML frontmatter and structured blocks | Precedent for prose-first Markdown carrying structure |
-| Fountain (screenplays) | Plain-text, prose-first markup that tools parse | Writers review scripts as prose |
+| Tool                                                                 | How visuals sync to speech                                                                                                                                                                                                                                                           | Lesson for Lucent                                                                                                                                                     |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| manim-voiceover 0.4.0                                                | SSML-style marks inside the text: `<bookmark mark='A'/>trigger animations`, then imperative `self.wait_until_bookmark("A")`. Word boundaries come from the TTS service (Azure) or from Whisper transcription, and a mark's time is interpolated by character distance (`tracker.py`) | Inline marks work. Its weaknesses are the ones Lucent removes: imperative waits, named marks separate from the words, and transcription when the TTS gives no timings |
+| SSML `<mark name="..."/>` (W3C), supported by cloud TTS speech marks | Named marks in the text, reported back with times                                                                                                                                                                                                                                    | A standard, but verbose and needs ids                                                                                                                                 |
+| Motion Canvas                                                        | Generator code with `yield* waitUntil('event')`; event times are dragged by hand in the editor timeline                                                                                                                                                                              | Timing lives in a GUI, not in the file: not agent-friendly                                                                                                            |
+| Remotion                                                             | Frames and sequences in React code                                                                                                                                                                                                                                                   | Timing is code                                                                                                                                                        |
+| Lucent v0.1 draft                                                    | `say` string per scene with `[cue]` brackets; steps reference cues                                                                                                                                                                                                                   | Closest to our needs; one `say` string per scene prevents per-sentence caching                                                                                        |
+| Slidev, Marp                                                         | Markdown with YAML frontmatter and structured blocks                                                                                                                                                                                                                                 | Precedent for prose-first Markdown carrying structure                                                                                                                 |
+| Fountain (screenplays)                                               | Plain-text, prose-first markup that tools parse                                                                                                                                                                                                                                      | Writers review scripts as prose                                                                                                                                       |
 
 Our `[phrase]` cue is a lighter SSML mark: it needs no id because the phrase names itself, and it cannot drift from
 the words it marks.
@@ -111,21 +111,21 @@ exactly as with episode 1.
 
 Every beat of episode 1 maps to a step, a component or the escape hatch:
 
-| Episode 1 beat | Construct | Built-in or custom |
-|---|---|---|
-| Maya timeline, age ticks, event cards | `timeline` | Built-in |
-| Sequencer photo, push-in, caption | `photo` + `drift` | Built-in |
-| Variant file scrolling, counter to 25,000, one line singled out | `vcf` + `number` + `focus` | Built-in |
-| Title card | `title` | Built-in |
-| Skin photo, band of nuclei outlined | `photo` + `ring` (`shape: band`) | Built-in |
-| HeLa nucleus circled, stat card | `ring` + `stat` | Built-in |
-| Tennis ball filling with thread | `custom: TangledThread` | Custom |
-| Blood rings, labels, census bar, white cell ring | `ring` + `label` + `sheet` + `bar` | Built-in |
-| Dividing cells ringed, chip | `photo` + `ring` + `label` | Built-in |
-| Karyotype, pair numbers, mother and father marks, X and Y | `image` + `label` on points + `ring` | Built-in |
-| Zoom into chromosome 1, helix, 2 nm marker | `zoom` + `into` + `helix` + `measure` | Built-in |
-| Base tiles turn into the HBB sequence | `bases`, then a state change `$legend: { seq }` | Built-in |
-| Question card, building blocks, credits | `title`, `row` of tiles, generated credits | Built-in |
+| Episode 1 beat                                                  | Construct                                       | Built-in or custom |
+| --------------------------------------------------------------- | ----------------------------------------------- | ------------------ |
+| Maya timeline, age ticks, event cards                           | `timeline`                                      | Built-in           |
+| Sequencer photo, push-in, caption                               | `photo` + `drift`                               | Built-in           |
+| Variant file scrolling, counter to 25,000, one line singled out | `vcf` + `number` + `focus`                      | Built-in           |
+| Title card                                                      | `title`                                         | Built-in           |
+| Skin photo, band of nuclei outlined                             | `photo` + `ring` (`shape: band`)                | Built-in           |
+| HeLa nucleus circled, stat card                                 | `ring` + `stat`                                 | Built-in           |
+| Tennis ball filling with thread                                 | `custom: TangledThread`                         | Custom             |
+| Blood rings, labels, census bar, white cell ring                | `ring` + `label` + `sheet` + `bar`              | Built-in           |
+| Dividing cells ringed, chip                                     | `photo` + `ring` + `label`                      | Built-in           |
+| Karyotype, pair numbers, mother and father marks, X and Y       | `image` + `label` on points + `ring`            | Built-in           |
+| Zoom into chromosome 1, helix, 2 nm marker                      | `zoom` + `into` + `helix` + `measure`           | Built-in           |
+| Base tiles turn into the HBB sequence                           | `bases`, then a state change `$legend: { seq }` | Built-in           |
+| Question card, building blocks, credits                         | `title`, `row` of tiles, generated credits      | Built-in           |
 
 Beyond episode 1, the series needs (from `prototypes/manim/SERIES.md`): `table` (Chargaff, codons, VCF fields),
 `strand` with 5' and 3' ends and `reverse` / `complement` state changes, `flow` (central dogma), `punnett` and
@@ -137,15 +137,15 @@ no themes or styles beyond one until needed.
 
 ## 4. Options compared
 
-| | A. Plain YAML | B. Quoted YAML | **C. Markdown + scene block** | D. Inline directives |
-|---|---|---|---|---|
-| Overhead tokens (two scenes) | 398 | 414 | **338** | 220 |
-| Breaks on real narration | 11% of lines, one class silently | No (if always quoted) | **No** | No |
-| Cue can mismatch its phrase | Yes (caught by `check`) | Yes (caught) | **Yes (caught)** | No |
-| Structured steps | Native | Native | **Native (YAML block)** | Attribute strings |
-| Reads as a script for review and translation | Poor | Poor | **Good** | Noisy |
-| Parser we own | None | None | **A line-based splitter (headings, paragraphs, `>` lines, one fence)** | A directive grammar and attribute mini-languages |
-| Known to agents | Very | Very | **Very (Markdown, YAML)** | Moderately (remark directives) |
+|                                              | A. Plain YAML                    | B. Quoted YAML        | **C. Markdown + scene block**                                          | D. Inline directives                             |
+| -------------------------------------------- | -------------------------------- | --------------------- | ---------------------------------------------------------------------- | ------------------------------------------------ |
+| Overhead tokens (two scenes)                 | 398                              | 414                   | **338**                                                                | 220                                              |
+| Breaks on real narration                     | 11% of lines, one class silently | No (if always quoted) | **No**                                                                 | No                                               |
+| Cue can mismatch its phrase                  | Yes (caught by `check`)          | Yes (caught)          | **Yes (caught)**                                                       | No                                               |
+| Structured steps                             | Native                           | Native                | **Native (YAML block)**                                                | Attribute strings                                |
+| Reads as a script for review and translation | Poor                             | Poor                  | **Good**                                                               | Noisy                                            |
+| Parser we own                                | None                             | None                  | **A line-based splitter (headings, paragraphs, `>` lines, one fence)** | A directive grammar and attribute mini-languages |
+| Known to agents                              | Very                             | Very                  | **Very (Markdown, YAML)**                                              | Moderately (remark directives)                   |
 
 ## 5. Recommendation
 

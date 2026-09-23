@@ -1,5 +1,5 @@
-# Markdown keeps compact tables: agents read these docs, and padding costs tokens.
-**/*.md
+# Lucent files: Prettier puts a blank line before blockquotes, which splits translations from their paragraph.
+**/*.lucent.md
 pnpm-lock.yaml
 coverage/
 prototypes/

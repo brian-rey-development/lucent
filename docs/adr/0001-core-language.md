@@ -7,11 +7,11 @@
 
 Lucent turns a declarative video file into an mp4. It has two very different kinds of work:
 
-| Part | Work | Cost profile |
-|---|---|---|
-| Compiler | Parse, validate, resolve references, schedule cues, compile state snapshots | Tiny. A few hundred lines of YAML, milliseconds in any language |
-| Renderer and components | Draw every frame: photos, text, shapes, motion | All of the runtime cost, and all of the visual quality |
-| Voice | Text to speech with word timings | Seconds per sentence, cached |
+| Part                    | Work                                                                        | Cost profile                                                    |
+| ----------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Compiler                | Parse, validate, resolve references, schedule cues, compile state snapshots | Tiny. A few hundred lines of YAML, milliseconds in any language |
+| Renderer and components | Draw every frame: photos, text, shapes, motion                              | All of the runtime cost, and all of the visual quality          |
+| Voice                   | Text to speech with word timings                                            | Seconds per sentence, cached                                    |
 
 Two facts follow from first principles:
 
@@ -77,18 +77,18 @@ Measured today: the Manim prototype (Python, Cairo) renders at 1.9 s per video s
 Scores 1 to 5, weights 1 to 5. The weights encode this project's goals: quality explainers, fast iteration,
 authored by agents, maintained by one person.
 
-| Criterion | Weight | TS | Python | Rust | Go |
-|---|---|---|---|---|---|
-| Rendering and typography quality within reach | 5 | 5 | 3 | 3 | 2 |
-| Live preview and iteration loop | 5 | 5 | 2 | 3 | 2 |
-| Time to the first real video | 4 | 5 | 4 | 1 | 1 |
-| Agents writing specs and components | 4 | 5 | 4 | 3 | 3 |
-| Owner fit and maintainability | 4 | 5 | 4 | 2 | 2 |
-| Raw performance and determinism | 3 | 3 | 2 | 5 | 4 |
-| Voice and ML ecosystem | 2 | 3 | 5 | 3 | 2 |
-| Distribution | 2 | 3 | 3 | 5 | 5 |
-| Community surface for components | 2 | 5 | 4 | 2 | 1 |
-| **Weighted average** | | **4.55** | **3.32** | **2.87** | **2.32** |
+| Criterion                                     | Weight | TS       | Python   | Rust     | Go       |
+| --------------------------------------------- | ------ | -------- | -------- | -------- | -------- |
+| Rendering and typography quality within reach | 5      | 5        | 3        | 3        | 2        |
+| Live preview and iteration loop               | 5      | 5        | 2        | 3        | 2        |
+| Time to the first real video                  | 4      | 5        | 4        | 1        | 1        |
+| Agents writing specs and components           | 4      | 5        | 4        | 3        | 3        |
+| Owner fit and maintainability                 | 4      | 5        | 4        | 2        | 2        |
+| Raw performance and determinism               | 3      | 3        | 2        | 5        | 4        |
+| Voice and ML ecosystem                        | 2      | 3        | 5        | 3        | 2        |
+| Distribution                                  | 2      | 3        | 3        | 5        | 5        |
+| Community surface for components              | 2      | 5        | 4        | 2        | 1        |
+| **Weighted average**                          |        | **4.55** | **3.32** | **2.87** | **2.32** |
 
 **Sensitivity.** If Lucent were optimised as an open source product and we set time to first video and live preview
 to weight 1, and performance and distribution to weight 5, TypeScript still leads (4.17 against Rust's 3.41). Rust

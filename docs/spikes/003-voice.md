@@ -1,12 +1,12 @@
 # Spike 003: Voice and word timings
 
-| | |
-|---|---|
-| Status | Complete |
-| Date | 2026-09-23 |
-| Question | How should Lucent produce narration audio with word-level timings locally, fast, and with licences compatible with an open source tool? |
-| Informs | ADR 0004 (voice sidecar), ADR 0005 (narration-driven timing) |
-| Machine | Apple M5 Pro (15 CPU cores: 5 performance, 10 efficiency), 24 GB, macOS 26.4.1, Python 3.13, kokoro 0.9.4, misaki 0.9.4, torch 2.14.0, onnxruntime 1.30.0 |
+|          |                                                                                                                                                           |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status   | Complete                                                                                                                                                  |
+| Date     | 2026-09-23                                                                                                                                                |
+| Question | How should Lucent produce narration audio with word-level timings locally, fast, and with licences compatible with an open source tool?                   |
+| Informs  | ADR 0004 (voice sidecar), ADR 0005 (narration-driven timing)                                                                                              |
+| Machine  | Apple M5 Pro (15 CPU cores: 5 performance, 10 efficiency), 24 GB, macOS 26.4.1, Python 3.13, kokoro 0.9.4, misaki 0.9.4, torch 2.14.0, onnxruntime 1.30.0 |
 
 ## 1. Question and why it matters
 
@@ -45,10 +45,10 @@ All experiments ran in a throwaway uv project in the session scratchpad. Nothing
 
 **F1. Kokoro on CPU is about 11 to 12 times faster than real time. MPS is slower.** Measured, single process, warm:
 
-| Device | RTF, 4 sentences | Import | Model load | First call | RSS |
-|---|---|---|---|---|---|
-| CPU | 0.087 to 0.095 | 1.72 s | 2.40 s | 0.61 s | 2,439 MB |
-| MPS | 0.107 to 0.244 | 2.23 s | 2.73 s | 6.37 s | 918 MB |
+| Device | RTF, 4 sentences | Import | Model load | First call | RSS      |
+| ------ | ---------------- | ------ | ---------- | ---------- | -------- |
+| CPU    | 0.087 to 0.095   | 1.72 s | 2.40 s     | 0.61 s     | 2,439 MB |
+| MPS    | 0.107 to 0.244   | 2.23 s | 2.73 s     | 6.37 s     | 918 MB   |
 
 RTF is synthesis time divided by audio duration. A 10.9 s sentence took 0.95 s on CPU (measured). MPS is slower for
 short sentences and costs 6.4 s on the first call, so **use CPU**.
@@ -61,11 +61,11 @@ already says. Warm synthesis of a 5.7 to 10.9 s sentence took 0.50 to 0.95 s (me
 **F3. Threads saturate at 4. Parallel processes add throughput but cost memory.** Measured, 24.6 s of audio over
 4 sentences:
 
-| Setup | Wall time | RTF | Throughput |
-|---|---|---|---|
-| 1 process, 1 thread | 3.50 s | 0.143 | 7x real time |
-| 1 process, 4 threads | 2.08 s | 0.085 | 12x |
-| 1 process, 15 threads | 2.00 s | 0.081 | 12x |
+| Setup                   | Wall time                                     | RTF                 | Throughput   |
+| ----------------------- | --------------------------------------------- | ------------------- | ------------ |
+| 1 process, 1 thread     | 3.50 s                                        | 0.143               | 7x real time |
+| 1 process, 4 threads    | 2.08 s                                        | 0.085               | 12x          |
+| 1 process, 15 threads   | 2.00 s                                        | 0.081               | 12x          |
 | 3 processes x 5 threads | 3.03 to 3.46 s each, 73.7 s of audio in total | 0.123 to 0.141 each | 21x combined |
 
 A full 6-minute episode voiced from scratch takes about 30 s with one warm process, or about 17 s with three
@@ -102,10 +102,10 @@ published `onnx-community/Kokoro-82M-v1.0-ONNX` has one output, `waveform` (inpu
 Inside the graph there is a single `/encoder/Round -> /encoder/Clip -> /encoder/Cast` chain, which is `pred_dur`.
 Appending `/encoder/Cast_output_0` as a graph output, measured:
 
-| Variant | Durations vs PyTorch | Warm synthesis, 6.3 s sentence |
-|---|---|---|
-| `model.onnx` (fp32, 310 MB) | Identical: 99 of 99 phonemes, max difference 0 frames | 0.67 to 0.75 s (RTF 0.107 to 0.119) |
-| `model_quantized.onnx` | Max difference 1 frame (25 ms), total 254 against 252 frames | 2.37 s |
+| Variant                     | Durations vs PyTorch                                         | Warm synthesis, 6.3 s sentence      |
+| --------------------------- | ------------------------------------------------------------ | ----------------------------------- |
+| `model.onnx` (fp32, 310 MB) | Identical: 99 of 99 phonemes, max difference 0 frames        | 0.67 to 0.75 s (RTF 0.107 to 0.119) |
+| `model_quantized.onnx`      | Max difference 1 frame (25 ms), total 254 against 252 frames | 2.37 s                              |
 
 onnxruntime session load takes about 0.2 s (measured), against 1.7 s for the PyTorch model. With the patched fp32
 graph, **word timings no longer require PyTorch**. `kokoro-js` does not expose durations: no `pred_dur` or
@@ -113,6 +113,7 @@ duration symbol exists in its bundle.
 
 **F7. PyTorch can leave now. Python cannot, because of phonemisation.** Kokoro takes phonemes, not text. Its G2P is
 misaki, which combines:
+
 - 90,201 gold and 93,361 silver dictionary entries
 - number and acronym rules
 - spaCy part-of-speech tags to choose between heteronyms: `read` has 5 entries by POS, `live` has 2
@@ -124,6 +125,7 @@ measured separately) and 0.77 s for the first sentence. RSS was 1.0 GB instead o
 still needed.
 
 A Node-only path needs a TypeScript G2P. Two options:
+
 - **Port misaki.** Its dictionaries are Apache-2.0 JSON, about 6 MB for US English. `en.py` is 712 lines, and it needs
   a POS tagger. Estimated 2 to 4 days to reach parity.
 - **Use `phonemizer` for npm.** This is what kokoro-js uses: espeak-ng compiled to WebAssembly. Pronunciation quality
@@ -132,21 +134,22 @@ A Node-only path needs a TypeScript G2P. Two options:
 **F8. Licences: the models and misaki are permissive; everything espeak-ng is GPL-3.0.** Verified from package
 metadata and licence files:
 
-| Component | Licence | Role |
-|---|---|---|
-| Kokoro-82M weights | Apache-2.0 (model card; trained on permissive, public domain and CC BY audio) | Model |
-| kokoro (Python) | Apache-2.0 | Pipeline |
-| misaki | Apache-2.0 | G2P |
-| spaCy, `en_core_web_sm` | MIT | POS tagging inside misaki |
-| num2words | LGPL | Imported by misaki to spell out numbers; acceptable as an unmodified, replaceable library |
-| onnxruntime | MIT | Inference |
-| phonemizer-fork (Python) | GPL-3.0-or-later | Imported in-process by misaki's espeak fallback |
-| espeak-ng (Homebrew 1.52.0) and the copy bundled by `espeakng-loader` | GPL-3.0-or-later | Fallback G2P |
-| `phonemizer` (npm 1.2.1) | Declared Apache-2.0, but it bundles espeak-ng compiled to WebAssembly, which is GPL-3.0 | kokoro-js G2P |
-| kokoro-js | Apache-2.0, depends on the above | Rejected in ADR 0004 |
-| Piper (`OHF-Voice/piper1-gpl`, active) | GPL-3.0. The MIT `rhasspy/piper` is archived | Alternative TTS |
+| Component                                                             | Licence                                                                                 | Role                                                                                      |
+| --------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Kokoro-82M weights                                                    | Apache-2.0 (model card; trained on permissive, public domain and CC BY audio)           | Model                                                                                     |
+| kokoro (Python)                                                       | Apache-2.0                                                                              | Pipeline                                                                                  |
+| misaki                                                                | Apache-2.0                                                                              | G2P                                                                                       |
+| spaCy, `en_core_web_sm`                                               | MIT                                                                                     | POS tagging inside misaki                                                                 |
+| num2words                                                             | LGPL                                                                                    | Imported by misaki to spell out numbers; acceptable as an unmodified, replaceable library |
+| onnxruntime                                                           | MIT                                                                                     | Inference                                                                                 |
+| phonemizer-fork (Python)                                              | GPL-3.0-or-later                                                                        | Imported in-process by misaki's espeak fallback                                           |
+| espeak-ng (Homebrew 1.52.0) and the copy bundled by `espeakng-loader` | GPL-3.0-or-later                                                                        | Fallback G2P                                                                              |
+| `phonemizer` (npm 1.2.1)                                              | Declared Apache-2.0, but it bundles espeak-ng compiled to WebAssembly, which is GPL-3.0 | kokoro-js G2P                                                                             |
+| kokoro-js                                                             | Apache-2.0, depends on the above                                                        | Rejected in ADR 0004                                                                      |
+| Piper (`OHF-Voice/piper1-gpl`, active)                                | GPL-3.0. The MIT `rhasspy/piper` is archived                                            | Alternative TTS                                                                           |
 
 The practical line (not legal advice):
+
 - Lucent must not **link or bundle** GPL code in its default distribution. That covers importing phonemizer in the
   same Python process and shipping the npm `phonemizer` wasm.
 - Running a separately installed `espeak-ng` binary as an optional **subprocess** is generally treated as aggregation,
@@ -158,6 +161,7 @@ The practical line (not legal advice):
 
 **F9. Without espeak, 0.8% of words are unpronounceable, and the gap can be closed with the lexicon.** Measured with
 misaki and no fallback, over 1,666 words:
+
 - 13 words were unresolved: `Oswald`, `Avery` (3 times), `Rockefeller`, `Martha`, `magnified`, `Erwin`, `Chargaff`
   (3 times), `Halden`, `Phred`.
 - Domain acronyms resolved on their own: `SCN1A` became "S C N one A", and `GRCh38` became "G R C H thirty eight".
@@ -167,6 +171,7 @@ report them instead. `check` can then raise an error, for example `W206 blood.sa
 fix: add lexicon: { Chargaff: ... }`, turning a silent audio defect into a 30-token fix.
 
 **F10. Pronunciation overrides work inline, and cue matching is unaffected.**
+
 - misaki accepts `[word](/phonemes/)`. The token keeps its original text (`HeLa`) and gets the override phonemes, so
   cues and subtitles still match the written word.
 - A Lucent `lexicon: { HeLa: "/hˈilə/" }` can be applied by rewriting each occurrence into this syntax before G2P.
@@ -176,6 +181,7 @@ fix: add lexicon: { Chargaff: ... }`, turning a silent audio defect into a 30-to
 - Separately, `chr2` was read as "C H R two": raw identifiers do not belong in narration.
 
 **F11. The environment is fragile in two places, and both break local first.**
+
 - `espeakng-loader` 0.2.4's bundled espeak-ng aborts the process on macOS arm64. It looks for its data at a
   hard-coded CI path (`/Users/runner/work/.../phontab`), and `ESPEAK_DATA_PATH` did not help. Measured. It worked only
   after pointing phonemizer at Homebrew's espeak-ng.
@@ -186,14 +192,14 @@ Both argue for a sidecar with pinned, vendored dependencies, installed by `lucen
 
 ## 4. Options compared
 
-| Option | Word timings | Cold start (first sentence) | Warm RTF | Memory | Install weight | GPL exposure | Python |
-|---|---|---|---|---|---|---|---|
-| A. Kokoro PyTorch (KPipeline) in a Python sidecar | Yes, native | 3.4 s (measured) | 0.08 to 0.09 (measured) | 2.4 GB | torch 553 MB | In-process phonemizer unless removed | Yes |
-| **B. misaki plus Kokoro ONNX with `pred_dur` exposed, Python sidecar** | **Yes, identical to A (fp32)** | **3.6 s (measured)** | **0.11 to 0.12 (measured)** | **1.0 GB** | **onnxruntime 77 MB plus model 310 MB** | **None by default; espeak opt-in by subprocess** | **Yes, small** |
-| C. TypeScript G2P port plus `onnxruntime-node` plus patched ONNX | Yes | About 0.5 s (estimated) | About 0.11 (estimated, same runtime) | About 0.5 GB (estimated) | Model plus dictionaries | None | No |
-| D. kokoro-js (phonemizer.js plus transformers.js) | No | About 1 s (estimated) | Not measured | Not measured | Small | GPL wasm bundled | No |
-| E. kokoro-js plus whisper forced alignment | Approximate (F5: p90 125 ms) | Several seconds (estimated) | Slower (two models) | High | Two models | Same as D | No |
-| F. Piper | Phoneme alignments available (not verified here) | Not measured | Not measured | Small | Small | GPL-3.0 (active fork) | Optional |
+| Option                                                                 | Word timings                                     | Cold start (first sentence) | Warm RTF                             | Memory                   | Install weight                          | GPL exposure                                     | Python         |
+| ---------------------------------------------------------------------- | ------------------------------------------------ | --------------------------- | ------------------------------------ | ------------------------ | --------------------------------------- | ------------------------------------------------ | -------------- |
+| A. Kokoro PyTorch (KPipeline) in a Python sidecar                      | Yes, native                                      | 3.4 s (measured)            | 0.08 to 0.09 (measured)              | 2.4 GB                   | torch 553 MB                            | In-process phonemizer unless removed             | Yes            |
+| **B. misaki plus Kokoro ONNX with `pred_dur` exposed, Python sidecar** | **Yes, identical to A (fp32)**                   | **3.6 s (measured)**        | **0.11 to 0.12 (measured)**          | **1.0 GB**               | **onnxruntime 77 MB plus model 310 MB** | **None by default; espeak opt-in by subprocess** | **Yes, small** |
+| C. TypeScript G2P port plus `onnxruntime-node` plus patched ONNX       | Yes                                              | About 0.5 s (estimated)     | About 0.11 (estimated, same runtime) | About 0.5 GB (estimated) | Model plus dictionaries                 | None                                             | No             |
+| D. kokoro-js (phonemizer.js plus transformers.js)                      | No                                               | About 1 s (estimated)       | Not measured                         | Not measured             | Small                                   | GPL wasm bundled                                 | No             |
+| E. kokoro-js plus whisper forced alignment                             | Approximate (F5: p90 125 ms)                     | Several seconds (estimated) | Slower (two models)                  | High                     | Two models                              | Same as D                                        | No             |
+| F. Piper                                                               | Phoneme alignments available (not verified here) | Not measured                | Not measured                         | Small                    | Small                                   | GPL-3.0 (active fork)                            | Optional       |
 
 For recorded human narration, one path is optional forced alignment: faster-whisper (MIT) with word timestamps,
 mapped to the script words by sequence alignment, or the Montreal Forced Aligner (MIT, more precise, heavier). The
@@ -217,7 +223,7 @@ sidecar contract already fits this: audio plus script in, word timings out.
    - the engine version and the model file hash
    - the voice, the speed, and the lexicon entries that occur in the text
    - the normalised text
-   Store the wav plus a JSON of word timings. Tokens that are only punctuation are omitted.
+     Store the wav plus a JSON of word timings. Tokens that are only punctuation are omitted.
 4. **Unknown words are errors, not silence (F9).**
    - The sidecar returns `ood`, and `check` reports each unknown word with a lexicon fix.
    - espeak-ng is an optional fallback: detect a system binary, call it as a subprocess, and record which words used
@@ -286,11 +292,13 @@ onnx.save(m, "patched_model.onnx")
 ```
 
 Word timestamps from durations follow Kokoro's `join_timestamps`:
+
 - Walk the tokens, and sum the durations of each token's phonemes plus a following space when `whitespace` is set.
 - The first frame belongs to the BOS token.
 - Kokoro divides by 80 in half-frame units, which is equivalent to 40 frames per second.
 
 **Accuracy comparison.**
+
 - faster-whisper 1.2.1, `small.en`, int8, CPU, `word_timestamps=True`. The model download and load took 105 s the
   first time.
 - Words were normalised to `[a-z0-9']` and matched greedily within a 3-token window.
@@ -298,6 +306,7 @@ Word timestamps from durations follow Kokoro's `join_timestamps`:
   transcribed the overridden names differently ("Hella sells an ...").
 
 **Sentences used for speed tests** (from the Halden episode 1 script):
+
 1. "These pale discs are red blood cells. Look for a purple dot inside them and you won't find one."
 2. "Chromosome one, the largest, is about two hundred and forty-nine million units long."
 3. "Your body has roughly thirty trillion cells, and more than eighty percent of them are red blood cells. Counted

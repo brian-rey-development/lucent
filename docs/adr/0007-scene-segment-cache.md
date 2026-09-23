@@ -10,11 +10,11 @@ edits touch one scene.
 
 ## Options
 
-| Option | Problem |
-|---|---|
-| Whole-video render | Every edit pays for every scene |
-| Per-frame cache | Huge storage; invalidation is fragile for anything that moves |
-| **Per-scene segments** | Scene boundaries must be encoder-friendly |
+| Option                 | Problem                                                       |
+| ---------------------- | ------------------------------------------------------------- |
+| Whole-video render     | Every edit pays for every scene                               |
+| Per-frame cache        | Huge storage; invalidation is fragile for anything that moves |
+| **Per-scene segments** | Scene boundaries must be encoder-friendly                     |
 
 ## Decision
 

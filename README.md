@@ -75,47 +75,47 @@ E201 30:12 blood.do[1].ring[0] blood has no point rbc3; fix: use rbc_1
 
 ## Commands
 
-| Command | Output |
-|---|---|
-| `lucent check <file> [--scene <id>] [--json]` | Diagnostics and the estimated timeline |
-| `lucent catalog` | Every verb, one line each, about 500 tokens |
-| `lucent catalog <verb> [--schema]` | One verb, or its JSON Schema |
-| `lucent catalog --codes` | Every diagnostic code |
-| `lucent --help`, `lucent <command> --help`, `lucent --version` | Help and version |
+| Command                                                        | Output                                      |
+| -------------------------------------------------------------- | ------------------------------------------- |
+| `lucent check <file> [--scene <id>] [--json]`                  | Diagnostics and the estimated timeline      |
+| `lucent catalog`                                               | Every verb, one line each, about 500 tokens |
+| `lucent catalog <verb> [--schema]`                             | One verb, or its JSON Schema                |
+| `lucent catalog --codes`                                       | Every diagnostic code                       |
+| `lucent --help`, `lucent <command> --help`, `lucent --version` | Help and version                            |
 
 `check` exits 0 when the file has no errors (warnings allowed), 1 when it has errors, 2 on bad usage, 3 when the file
 cannot be read, and 70 on an internal error.
 
 ## Design
 
-| Goal | Budget | Approach |
-|---|---|---|
-| Cheap for agents | Catalog ≤ 1,500 tokens, one error ≤ 40 | One-line catalog and errors, counted in CI with `o200k_base` |
-| Fast feedback | `check` < 200 ms | Text checks first, pixels last. About 70 ms for a cold CLI run on the example |
-| Fast render | ≤ 0.25 s per video second at 1080p30 | SVG display list rasterised by Skia, cached per scene |
-| Local first | No account, no network after install | Kokoro-82M voice in a local sidecar, ffmpeg |
+| Goal             | Budget                                 | Approach                                                                      |
+| ---------------- | -------------------------------------- | ----------------------------------------------------------------------------- |
+| Cheap for agents | Catalog ≤ 1,500 tokens, one error ≤ 40 | One-line catalog and errors, counted in CI with `o200k_base`                  |
+| Fast feedback    | `check` < 200 ms                       | Text checks first, pixels last. About 70 ms for a cold CLI run on the example |
+| Fast render      | ≤ 0.25 s per video second at 1080p30   | SVG display list rasterised by Skia, cached per scene                         |
+| Local first      | No account, no network after install   | Kokoro-82M voice in a local sidecar, ffmpeg                                   |
 
 Budgets live in [`docs/goals.md`](docs/goals.md), decisions in [`docs/adr/`](docs/adr/), and the measurements behind
 them in [`docs/spikes/`](docs/spikes/).
 
 ## Roadmap
 
-| Phase | Scope | Status |
-|---|---|---|
-| 0. Foundation | Format, `check`, catalog, estimated timeline | Done |
-| 1. Voice | Kokoro-82M sidecar, word timings, exact cue times | Next |
-| 2. Render | Layout, motion, Skia rasteriser, ffmpeg segments, soft subtitles | Planned |
-| 3. Agents | MCP server, contact sheets, shared background process | Planned |
+| Phase         | Scope                                                            | Status  |
+| ------------- | ---------------------------------------------------------------- | ------- |
+| 0. Foundation | Format, `check`, catalog, estimated timeline                     | Done    |
+| 1. Voice      | Kokoro-82M sidecar, word timings, exact cue times                | Next    |
+| 2. Render     | Layout, motion, Skia rasteriser, ffmpeg segments, soft subtitles | Planned |
+| 3. Agents     | MCP server, contact sheets, shared background process            | Planned |
 
 ## Repository
 
-| Path | Contents |
-|---|---|
-| [`packages/core`](packages/core) | The engine, free of I/O |
-| [`apps/cli`](apps/cli) | The `lucent` command |
-| [`examples/`](examples) | Videos checked clean in CI |
-| [`docs/`](docs) | Format reference, goals, ADRs, spikes, plans |
-| [`prototypes/manim`](prototypes/manim) | The frozen Manim prototype Lucent replaces |
+| Path                                   | Contents                                     |
+| -------------------------------------- | -------------------------------------------- |
+| [`packages/core`](packages/core)       | The engine, free of I/O                      |
+| [`apps/cli`](apps/cli)                 | The `lucent` command                         |
+| [`examples/`](examples)                | Videos checked clean in CI                   |
+| [`docs/`](docs)                        | Format reference, goals, ADRs, spikes, plans |
+| [`prototypes/manim`](prototypes/manim) | The frozen Manim prototype Lucent replaces   |
 
 ## Contributing
 

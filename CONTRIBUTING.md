@@ -11,12 +11,12 @@ pnpm verify
 
 `pnpm verify` runs what CI runs: lint (type-aware), format check, typecheck, tests with coverage and the build.
 
-| Command | Purpose |
-|---|---|
-| `pnpm test` | Run the tests |
-| `pnpm exec vitest run <path>` | Run some tests |
-| `pnpm format` | Format everything |
-| `pnpm build && pnpm -s lucent check <file>` | Run the CLI |
+| Command                                     | Purpose           |
+| ------------------------------------------- | ----------------- |
+| `pnpm test`                                 | Run the tests     |
+| `pnpm exec vitest run <path>`               | Run some tests    |
+| `pnpm format`                               | Format everything |
+| `pnpm build && pnpm -s lucent check <file>` | Run the CLI       |
 
 Development and tests read TypeScript sources directly: each package exports its `src/` under the `@lucent/source`
 condition, which `tsconfig.json` and `vitest.config.ts` enable. Only the build and the published package use `dist/`.
@@ -38,6 +38,7 @@ condition, which `tsconfig.json` and `vitest.config.ts` enable. Only the build a
   ```
 
   Support files exist only when needed. A type or constant used by one file stays in that file.
+
 - Modules import only through another module's `index.ts`, and only from a lower layer. The layers are in
   [`packages/core/README.md`](packages/core/README.md) and [`apps/cli/README.md`](apps/cli/README.md);
   `test/architecture.test.ts` enforces them, and a new module fails until it has a layer.

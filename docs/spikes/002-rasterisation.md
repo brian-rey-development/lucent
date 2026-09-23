@@ -1,12 +1,12 @@
 # Spike 002: Rasterisation backend
 
-| | |
-|---|---|
-| Status | Complete |
-| Date | 2026-09-23 |
+|          |                                                                                                                                        |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Status   | Complete                                                                                                                               |
+| Date     | 2026-09-23                                                                                                                             |
 | Question | Which backend turns our SVG display list into 1080p frames fastest, with quality matching the browser preview, within `docs/goals.md`? |
-| Informs | ADR 0003 (renderer), ADR 0007 (scene segment cache) |
-| Machine | MacBook, Apple M5 Pro, 15 CPU cores (5 performance, 10 efficiency), 24 GB, macOS 26.4.1, Node 24.21.0, ffmpeg 8.1.2 |
+| Informs  | ADR 0003 (renderer), ADR 0007 (scene segment cache)                                                                                    |
+| Machine  | MacBook, Apple M5 Pro, 15 CPU cores (5 performance, 10 efficiency), 24 GB, macOS 26.4.1, Node 24.21.0, ffmpeg 8.1.2                    |
 
 ## 1. Question and why it matters
 
@@ -23,10 +23,10 @@ budget.
 
 **Candidates**
 
-| Backend | Version | How it draws our display list |
-|---|---|---|
-| resvg | `@resvg/resvg-js` 2.6.2 (resvg, Rust) | Display list serialised to an SVG string, parsed and rendered per frame |
-| Skia | `@napi-rs/canvas` 1.0.9 (Skia, C++) | Display list translated to Canvas 2D calls (about 15 lines of translator) |
+| Backend  | Version                                        | How it draws our display list                                             |
+| -------- | ---------------------------------------------- | ------------------------------------------------------------------------- |
+| resvg    | `@resvg/resvg-js` 2.6.2 (resvg, Rust)          | Display list serialised to an SVG string, parsed and rendered per frame   |
+| Skia     | `@napi-rs/canvas` 1.0.9 (Skia, C++)            | Display list translated to Canvas 2D calls (about 15 lines of translator) |
 | Chromium | Playwright 1.63.0, bundled Chromium build 1243 | SVG string set as `innerHTML` in one page per tab, then `page.screenshot` |
 
 `skia-canvas` was not measured (last release 2025-09; `@napi-rs/canvas` covers the same engine and is more active).
@@ -53,13 +53,13 @@ All experiments are throwaway code in the session scratchpad; nothing here is Lu
 
 **F1. Skia meets the budget with a wide margin; resvg does not on photo frames.** Measured, raw RGBA out, no encode:
 
-| Backend and frame | 1 worker | 5 | 10 | 15 |
-|---|---|---|---|---|
-| Skia photo, smoothing `high` | 20.6 ms | 4.76 | 2.61 | 2.06 |
+| Backend and frame              | 1 worker                      | 5            | 10           | 15       |
+| ------------------------------ | ----------------------------- | ------------ | ------------ | -------- |
+| Skia photo, smoothing `high`   | 20.6 ms                       | 4.76         | 2.61         | 2.06     |
 | Skia photo, smoothing `medium` | 5.5 ms (single-thread median) | not measured | not measured | **0.64** |
-| Skia helix | 3.2 ms | 1.05 | 0.73 | **0.64** |
-| resvg photo (2560 JPEG) | 97.3 ms | 21.8 | 13.6 | **12.3** |
-| resvg helix | 13.9 ms | 3.23 | 2.41 | 2.52 |
+| Skia helix                     | 3.2 ms                        | 1.05         | 0.73         | **0.64** |
+| resvg photo (2560 JPEG)        | 97.3 ms                       | 21.8         | 13.6         | **12.3** |
+| resvg helix                    | 13.9 ms                       | 3.23         | 2.41         | 2.52     |
 
 Budget: 7.5 ms per frame. Skia is 12x under it at 15 workers; resvg misses it by 64% on photo frames. A first
 `medium` pool run silently used `high` smoothing because of a harness bug; after the fix only the 15-worker run was
@@ -94,10 +94,10 @@ default, tabs as concurrency; from its documentation, not re-verified in this sp
 **F7. The full path fits: 0.09 to 0.16 s per video second.** Measured, 14 Skia workers plus one ffmpeg process,
 600 frames:
 
-| Scene | h264_videotoolbox (q 65) | libx264 (medium, CRF 18) |
-|---|---|---|
-| photo | 3.70 ms/frame, 0.111 s per video second | 5.24 ms/frame, 0.157 s |
-| helix | 3.68 ms/frame, 0.110 s | 3.09 ms/frame, 0.093 s |
+| Scene | h264_videotoolbox (q 65)                | libx264 (medium, CRF 18) |
+| ----- | --------------------------------------- | ------------------------ |
+| photo | 3.70 ms/frame, 0.111 s per video second | 5.24 ms/frame, 0.157 s   |
+| helix | 3.68 ms/frame, 0.110 s                  | 3.09 ms/frame, 0.093 s   |
 
 The encoder is now the bottleneck, not the rasteriser. Encoders alone, measured on 180 raw photo frames: libx264
 medium 4.8 ms, libx264 veryfast 1.8 ms, h264_videotoolbox 4.4 ms, hevc_videotoolbox 4.7 ms, reading and converting
@@ -112,10 +112,10 @@ at 15 workers, 2.0 to 2.1 GB in the end-to-end run with 14 workers. Each worker 
 **F9. Parity with the browser preview is good for shapes and photos; fonts must be single-face files.** Measured
 against Chromium:
 
-| Frame | Skia | resvg |
-|---|---|---|
+| Frame | Skia                                      | resvg           |
+| ----- | ----------------------------------------- | --------------- |
 | photo | 1.17/255 mean, 0.71% of pixels off by >32 | 0.46/255, 0.17% |
-| helix | 0.23/255, 0.23% | 0.16/255, 0.12% |
+| helix | 0.23/255, 0.23%                           | 0.16/255, 0.12% |
 
 Visual inspection: rings, strokes, rounded chips, opacity and Menlo letters look identical in all three. Skia's
 Avenir Next text renders **bold where the others render regular**: `@napi-rs/canvas` exposes only one face of the
@@ -126,12 +126,12 @@ font issue.
 
 **F10. Licences and activity.**
 
-| Package | Licence | Last release | Note |
-|---|---|---|---|
-| `@napi-rs/canvas` | MIT (bundles Skia, BSD-3-Clause) | 2026-09-09 | Very active |
-| `@resvg/resvg-js` | MPL-2.0 | 2026-01-28 | File-level copyleft: using it unmodified as a dependency places no obligation on Lucent's own code; modified MPL files must stay MPL |
-| `resvg` crate | Apache-2.0 or MIT | 2026-08-02 | |
-| Playwright | Apache-2.0 | 2026-09-23 | Chromium itself is BSD-3-Clause |
+| Package           | Licence                          | Last release | Note                                                                                                                                 |
+| ----------------- | -------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `@napi-rs/canvas` | MIT (bundles Skia, BSD-3-Clause) | 2026-09-09   | Very active                                                                                                                          |
+| `@resvg/resvg-js` | MPL-2.0                          | 2026-01-28   | File-level copyleft: using it unmodified as a dependency places no obligation on Lucent's own code; modified MPL files must stay MPL |
+| `resvg` crate     | Apache-2.0 or MIT                | 2026-08-02   |                                                                                                                                      |
+| Playwright        | Apache-2.0                       | 2026-09-23   | Chromium itself is BSD-3-Clause                                                                                                      |
 
 **F11. Feature gaps, not measured.** Both native backends support clip paths (Canvas `clip()`, SVG `clipPath`) and
 drop shadows (Canvas `shadowBlur`, SVG `feDropShadow`), but their cost and parity were not measured. Blur and shadow
@@ -139,16 +139,16 @@ on CPU can be expensive per frame and should be benchmarked before entering the 
 
 ## 4. Options compared
 
-| | Skia (`@napi-rs/canvas`) | resvg (`@resvg/resvg-js`) | Chromium (Playwright) |
-|---|---|---|---|
-| Photo frame, 15 workers | **0.64 ms** (measured) | 12.3 ms (measured) | 7.7 ms screenshot only (measured) |
-| Vector frame, 15 workers | **0.64 ms** | 2.52 ms | Not measured separately (33 ms per tab) |
-| Full path with encode | **0.09 to 0.16 s per video second** (measured) | Not measured; fails on photos | Estimated above 0.25 s (encode not included in 7.7 ms) |
-| Decoded image reuse | Yes, per worker | No, decodes every frame | Yes, browser cache |
-| Parity with preview | Good; needs single-face fonts | Best | Is the preview |
-| Output | Raw RGBA | Raw RGBA | JPEG or PNG only |
-| Integration cost | Translate our subset to Canvas calls (small) | None, takes SVG | None, takes SVG |
-| Licence | MIT | MPL-2.0 | Apache-2.0 |
+|                          | Skia (`@napi-rs/canvas`)                       | resvg (`@resvg/resvg-js`)     | Chromium (Playwright)                                  |
+| ------------------------ | ---------------------------------------------- | ----------------------------- | ------------------------------------------------------ |
+| Photo frame, 15 workers  | **0.64 ms** (measured)                         | 12.3 ms (measured)            | 7.7 ms screenshot only (measured)                      |
+| Vector frame, 15 workers | **0.64 ms**                                    | 2.52 ms                       | Not measured separately (33 ms per tab)                |
+| Full path with encode    | **0.09 to 0.16 s per video second** (measured) | Not measured; fails on photos | Estimated above 0.25 s (encode not included in 7.7 ms) |
+| Decoded image reuse      | Yes, per worker                                | No, decodes every frame       | Yes, browser cache                                     |
+| Parity with preview      | Good; needs single-face fonts                  | Best                          | Is the preview                                         |
+| Output                   | Raw RGBA                                       | Raw RGBA                      | JPEG or PNG only                                       |
+| Integration cost         | Translate our subset to Canvas calls (small)   | None, takes SVG               | None, takes SVG                                        |
+| Licence                  | MIT                                            | MPL-2.0                       | Apache-2.0                                             |
 
 ## 5. Recommendation
 

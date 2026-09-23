@@ -4,5 +4,12 @@
     "noEmit": true,
     "customConditions": ["@lucent/source"]
   },
-  "include": ["apps/*/src", "apps/*/test", "packages/*/src", "packages/*/test", "test", "*.config.ts"]
+  "include": [
+    "apps/*/src",
+    "apps/*/test",
+    "packages/*/src",
+    "packages/*/test",
+    "test",
+    "*.config.ts"
+  ]
 }

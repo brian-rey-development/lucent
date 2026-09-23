@@ -42,7 +42,8 @@ const CLI: Package = {
   packages: new Set(["@lucent/core"]),
 };
 
-const IMPORT = /(?:^|\n)\s*(?:import|export)\b[^"';]*?from\s*["']([^"']+)["']|import\s*\(\s*["']([^"']+)["']\s*\)/g;
+const IMPORT =
+  /(?:^|\n)\s*(?:import|export)\b[^"';]*?from\s*["']([^"']+)["']|import\s*\(\s*["']([^"']+)["']\s*\)/g;
 
 async function filesOf(directory: string): Promise<readonly string[]> {
   const entries = await readdir(directory, { withFileTypes: true, recursive: true });
@@ -53,7 +54,9 @@ async function filesOf(directory: string): Promise<readonly string[]> {
 
 function moduleOf(pkg: Package, file: string): string {
   const path = relative(join(ROOT, pkg.root), file).replace(/\.ts$/, "");
-  return Object.keys(pkg.layers).find((name) => path === name || path.startsWith(`${name}/`)) ?? path;
+  return (
+    Object.keys(pkg.layers).find((name) => path === name || path.startsWith(`${name}/`)) ?? path
+  );
 }
 
 function importsOf(source: string): readonly string[] {
@@ -72,7 +75,8 @@ function problemsOf(pkg: Package, file: string, specifier: string): readonly str
   if (!Object.hasOwn(pkg.layers, to)) return [`${where}: outside the package or an unknown module`];
   if (to === from) return [];
   const problems = [];
-  if (target !== join(ROOT, pkg.root, to, "index.ts")) problems.push(`${where}: import ${to} through its index.ts`);
+  if (target !== join(ROOT, pkg.root, to, "index.ts"))
+    problems.push(`${where}: import ${to} through its index.ts`);
   if ((pkg.layers[to] ?? Infinity) >= (pkg.layers[from] ?? -Infinity))
     problems.push(`${where}: ${to} is not in a lower layer`);
   return problems;
@@ -82,7 +86,8 @@ async function violations(pkg: Package): Promise<readonly string[]> {
   const files = await filesOf(join(ROOT, pkg.root));
   const checked = await Promise.all(
     files.map(async (file) => {
-      if (!Object.hasOwn(pkg.layers, moduleOf(pkg, file))) return [`${relative(ROOT, file)}: unknown module`];
+      if (!Object.hasOwn(pkg.layers, moduleOf(pkg, file)))
+        return [`${relative(ROOT, file)}: unknown module`];
       const source = await readFile(file, "utf8");
       return importsOf(source).flatMap((specifier) => problemsOf(pkg, file, specifier));
     }),
@@ -101,7 +106,9 @@ describe("architecture", () => {
 
   it("finds the imports it checks", () => {
     expect(
-      importsOf('import { a } from "./a.ts";\nexport { b } from "../b/index.ts";\nconst c = await import("./c.ts");'),
+      importsOf(
+        'import { a } from "./a.ts";\nexport { b } from "../b/index.ts";\nconst c = await import("./c.ts");',
+      ),
     ).toEqual(["./a.ts", "../b/index.ts", "./c.ts"]);
   });
 });

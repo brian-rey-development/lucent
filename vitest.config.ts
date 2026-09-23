@@ -1,9 +1,11 @@
-import { defaultServerConditions } from "vite";
 import { defineConfig } from "vitest/config";
+
+// Setting conditions replaces Vite's defaults, so they follow the source condition.
+const CONDITIONS = ["@lucent/source", "module", "node", "development|production"];
 
 export default defineConfig({
   ssr: {
-    resolve: { conditions: ["@lucent/source", ...defaultServerConditions] },
+    resolve: { conditions: CONDITIONS },
   },
   test: {
     include: ["test/**/*.test.ts", "{apps,packages}/*/test/**/*.test.ts"],
