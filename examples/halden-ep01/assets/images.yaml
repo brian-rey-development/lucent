@@ -1,0 +1,13 @@
+blood:
+  file: images/blood.jpg
+  caption: Human blood smear · Wright's stain
+  points:
+    wbc: [0.46, 0.41, 0.145]
+    rbc_1: [0.26, 0.30, 0.08]
+    rbc_2: [0.75, 0.62, 0.08]
+
+karyotype:
+  file: images/karyotype.png
+  caption: Human karyotype · 46 chromosomes
+  points:
+    chr1: [0.07, 0.13, 0.18]
