@@ -1,0 +1,17 @@
+export const BYTE_ORDER_MARK = "﻿";
+export const LINE_BREAK = /\r\n|\r|\n/;
+export const WORD = /[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu;
+export const CURLY_APOSTROPHES = /[‘’ʼ]/g;
+export const NON_WORD = /[^\p{L}\p{N}']+/gu;
+export const ID_PATTERN = "[a-z][a-z0-9_-]*";
+export const ID = new RegExp(`^${ID_PATTERN}$`);
+export const ELEMENT_SIGIL = "$";
+export const POINT_SEPARATOR = "/";
+export const COMBINING_MARKS = /\p{M}+/gu;
+export const NON_ID_CHARACTERS = /[^a-z0-9_-]+/g;
+export const REPEATED_DASHES = /-{2,}/g;
+export const LEADING_NON_LETTERS = /^[^a-z]+/;
+export const DASH = "-";
+export const MAX_SUGGESTION_INPUT = 64;
+export const MAX_CANDIDATES = 200;
+export const CHARACTERS_PER_EDIT = 3;

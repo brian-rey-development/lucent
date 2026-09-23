@@ -1,0 +1,28 @@
+{
+  "name": "@lucent/core",
+  "version": "0.0.0",
+  "description": "The Lucent engine: parse, validate and schedule narrated explainer videos",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "@lucent/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "yaml": "2.9.1",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "js-tiktoken": "1.0.21"
+  }
+}
