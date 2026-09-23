@@ -28,3 +28,6 @@ prototypes/manim/assets/images/
 # Secrets
 .env
 .env.*
+
+# Tests
+coverage/

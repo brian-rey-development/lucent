@@ -1,0 +1,5 @@
+# Markdown keeps compact tables: agents read these docs, and padding costs tokens.
+**/*.md
+pnpm-lock.yaml
+coverage/
+prototypes/

@@ -7,24 +7,24 @@
     "node": ">=24"
   },
   "scripts": {
-    "build": "tsc --build",
-    "typecheck": "tsc --build",
-    "lint": "eslint .",
+    "build": "pnpm --recursive build",
+    "typecheck": "tsc --project tsconfig.json",
+    "lint": "oxlint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "lucent": "node packages/cli/dist/main.js",
-    "verify": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test:coverage"
+    "lucent": "node apps/cli/dist/main.js",
+    "verify": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test:coverage && pnpm build"
   },
   "devDependencies": {
-    "@eslint/js": "10.0.1",
     "@types/node": "24.13.6",
     "@vitest/coverage-v8": "5.0.1",
-    "eslint": "10.11.0",
+    "oxlint": "1.85.0",
+    "oxlint-tsgolint": "7.0.2002",
     "prettier": "3.9.9",
-    "typescript": "6.0.3",
-    "typescript-eslint": "8.70.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.0",
     "vitest": "5.0.1"
   }
 }
